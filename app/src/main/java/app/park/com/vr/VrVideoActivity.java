@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.v4.app.FragmentActivity;
 import android.util.Log;
 import android.util.Pair;
 import android.widget.SeekBar;
@@ -18,7 +19,12 @@ import com.google.vr.sdk.widgets.video.VrVideoView;
 import com.google.vr.sdk.widgets.video.VrVideoView.Options;
 import java.io.IOException;
 
+import app.park.com.MainActivity;
 import app.park.com.R;
+import app.park.com.bluetooth.BluetoothHandler;
+import app.park.com.bluetooth.BluetoothService;
+import app.park.com.bluetooth.Constants;
+import app.park.com.control.ContorlActivity;
 
 /**
  * A test activity that renders a 360 video using {@link VrVideoView}.
@@ -109,6 +115,10 @@ public class VrVideoActivity extends Activity {
      */
     private boolean isPaused = false;
 
+    private BluetoothService mBluetoothService = null;
+    private BluetoothHandler mHandler = null;
+    private BluetoothHandler.ActivityCb mActivityCb = null;
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -129,6 +139,8 @@ public class VrVideoActivity extends Activity {
         // ATTENTION: This was auto-generated to implement the App Indexing API.
         // See https://g.co/AppIndexing/AndroidStudio for more information.
         client = new GoogleApiClient.Builder(this).addApi(AppIndex.API).build();
+
+        mBluetoothService = BluetoothService.getInstance();
     }
 
     /**
@@ -265,6 +277,43 @@ public class VrVideoActivity extends Activity {
         );
         AppIndex.AppIndexApi.start(client, viewAction);
 */
+
+        mHandler = new BluetoothHandler();
+        mActivityCb = new BluetoothHandler.ActivityCb() {
+            @Override
+            public void sendCbMessage(int msgType, String msg) {
+                Log.d(TAG, "msg = " + msg);
+                switch (msgType) {
+                    case Constants.MESSAGE_STATE_CHANGE:
+                        switch (msg) {
+                            case Constants.BLUETOOTH_CONNECTED:
+                                break;
+                            case Constants.BLUETOOTH_CONNECTING:
+                                break;
+                            case Constants.BLUETOOTH_NONE:
+                                Toast.makeText(getApplicationContext(), "BT DISCONNECT!!!", Toast.LENGTH_SHORT).show();
+                                Intent intent = new Intent(getApplicationContext(), MainActivity.class);
+                                startActivity(intent);
+                                break;
+                        }
+                        break;
+                    case Constants.MESSAGE_READ:
+
+                        break;
+                    case Constants.MESSAGE_WRITE:
+
+                        break;
+                    case Constants.MESSAGE_DEVICE_NAME:
+                        break;
+                    case Constants.MESSAGE_TOAST:
+                        break;
+                    default:
+                        break;
+                }
+            }
+        };
+        mHandler.setActivityCb(mActivityCb);
+        mBluetoothService.setActivityHandler(mHandler);
     }
 
     @Override

@@ -152,7 +152,7 @@ public class BluetoothFragment extends Fragment {
         mHandler = new BluetoothHandler();
         mActivityCb = new BluetoothHandler.ActivityCb() {
             @Override
-            public void sendMessage(int msgType, String msg) {
+            public void sendCbMessage(int msgType, String msg) {
                 switch (msgType) {
                     case Constants.MESSAGE_STATE_CHANGE:
                         switch (msg) {

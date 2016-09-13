@@ -7,8 +7,8 @@ public class BluetoothHandler extends Handler {
     public static final String TAG = BluetoothFragment.class.getSimpleName();
     public static final boolean DBG = true;
 
-    interface ActivityCb {
-        void sendMessage(int msgType, String msg);
+    public interface ActivityCb {
+        void sendCbMessage(int msgType, String msg);
     }
 
     private ActivityCb mActivityCb = null;
@@ -35,18 +35,18 @@ public class BluetoothHandler extends Handler {
                 switch (msg.arg1) {
                     case BluetoothService.STATE_CONNECTED:
                         if (mActivityCb != null) {
-                            mActivityCb.sendMessage(Constants.MESSAGE_STATE_CHANGE, Constants.BLUETOOTH_CONNECTED);
+                            mActivityCb.sendCbMessage(Constants.MESSAGE_STATE_CHANGE, Constants.BLUETOOTH_CONNECTED);
                         }
                         break;
                     case BluetoothService.STATE_CONNECTING:
                         if (mActivityCb != null) {
-                            mActivityCb.sendMessage(Constants.MESSAGE_STATE_CHANGE, Constants.BLUETOOTH_CONNECTING);
+                            mActivityCb.sendCbMessage(Constants.MESSAGE_STATE_CHANGE, Constants.BLUETOOTH_CONNECTING);
                         }
                         break;
                     case BluetoothService.STATE_LISTEN:
                     case BluetoothService.STATE_NONE:
                         if (mActivityCb != null) {
-                            mActivityCb.sendMessage(Constants.MESSAGE_STATE_CHANGE, Constants.BLUETOOTH_NONE);
+                            mActivityCb.sendCbMessage(Constants.MESSAGE_STATE_CHANGE, Constants.BLUETOOTH_NONE);
                         }
                         break;
                 }
@@ -55,7 +55,7 @@ public class BluetoothHandler extends Handler {
                 byte[] writeBuf = (byte[]) msg.obj;
                 String writeMessage = new String(writeBuf);
                 if (mActivityCb != null) {
-                    mActivityCb.sendMessage(Constants.MESSAGE_WRITE, writeMessage);
+                    mActivityCb.sendCbMessage(Constants.MESSAGE_WRITE, writeMessage);
                 }
                 break;
             case Constants.MESSAGE_READ:
@@ -63,19 +63,19 @@ public class BluetoothHandler extends Handler {
                 // construct a string from the valid bytes in the buffer
                 String readMessage = new String(readBuf, 0, msg.arg1);
                 if (mActivityCb != null) {
-                    mActivityCb.sendMessage(Constants.MESSAGE_READ, readMessage);
+                    mActivityCb.sendCbMessage(Constants.MESSAGE_READ, readMessage);
                 }
                 break;
             case Constants.MESSAGE_DEVICE_NAME:
                 // save the connected device's name
                 mConnectedDeviceName = msg.getData().getString(Constants.DEVICE_NAME);
                 if (mActivityCb != null) {
-                    mActivityCb.sendMessage(Constants.MESSAGE_DEVICE_NAME, mConnectedDeviceName);
+                    mActivityCb.sendCbMessage(Constants.MESSAGE_DEVICE_NAME, mConnectedDeviceName);
                 }
                 break;
             case Constants.MESSAGE_TOAST:
                 if (mActivityCb != null) {
-                    mActivityCb.sendMessage(Constants.MESSAGE_TOAST, msg.getData().getString(Constants.TOAST));
+                    mActivityCb.sendCbMessage(Constants.MESSAGE_TOAST, msg.getData().getString(Constants.TOAST));
                 }
                 break;
         }
