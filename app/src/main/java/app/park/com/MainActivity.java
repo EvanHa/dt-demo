@@ -15,8 +15,9 @@ import app.park.com.bluetooth.BluetoothFragment;
 import app.park.com.bluetooth.Constants;
 import app.park.com.common.activities.ActivityBase;
 import app.park.com.control.ContorlActivity;
+import app.park.com.vr.VideoFragment;
 
-public class MainActivity extends ActivityBase implements View.OnClickListener, RadioGroup.OnCheckedChangeListener {
+public class MainActivity extends ActivityBase implements RadioGroup.OnCheckedChangeListener {
     public static final String TAG = MainActivity.class.getSimpleName();
     public static final boolean DBG = false;
 
@@ -24,12 +25,11 @@ public class MainActivity extends ActivityBase implements View.OnClickListener, 
     public static final int ROLE_VIEWER = 2;
 
     public static BluetoothFragment mBluetoothFragment; // Bluetooth Control button
+    public static VideoFragment mVideoFragment; // Video Button
     public static int mDeviceRole; // Device Role (Controller or Viewer)
 
     // Button
     private  static RadioGroup mRoleButton;
-    private  static Button mPlayButton;
-    private  static Button mPauseButton;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -38,12 +38,16 @@ public class MainActivity extends ActivityBase implements View.OnClickListener, 
         init_button();
 
         if (savedInstanceState == null) {
-            FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+            FragmentTransaction btTransaction = getSupportFragmentManager().beginTransaction();
             mBluetoothFragment = new BluetoothFragment();
-            transaction.replace(R.id.button_fragment, mBluetoothFragment);
-            transaction.commit();
-        }
+            btTransaction.replace(R.id.button_bluetooth_fragment, mBluetoothFragment);
+            btTransaction.commit();
 
+            FragmentTransaction videoTransaction = getSupportFragmentManager().beginTransaction();
+            mVideoFragment = new VideoFragment();
+            videoTransaction.replace(R.id.button_video_fragment, mVideoFragment);
+            videoTransaction.commit();
+        }
     }
 
     @Override
@@ -57,37 +61,6 @@ public class MainActivity extends ActivityBase implements View.OnClickListener, 
     }
 
     @Override
-    public void onClick(View view) {
-        String message;
-        switch(view.getId()) {
-            case R.id.btn_pause:
-                if (DBG) {
-                    Toast.makeText(getApplicationContext(), "btn_pause", Toast.LENGTH_SHORT).show();
-                }
-                if (mBluetoothFragment != null) {
-                    message = "pause";
-                    mBluetoothFragment.sendMessage(message);
-                } else {
-                    Log.e(TAG, "Can't use bluetooth module");
-                }
-                break;
-            case R.id.btn_play:
-                if (DBG) {
-                    Toast.makeText(getApplicationContext(), "btn_play", Toast.LENGTH_SHORT).show();
-                }
-                if (mBluetoothFragment != null) {
-                    message = "play";
-                    mBluetoothFragment.sendMessage(message);
-                    Intent intent = new Intent(getApplicationContext(), ContorlActivity.class);
-                    startActivity(intent);
-                } else {
-                    Log.e(TAG, "Can't use bluetooth module");
-                }
-                break;
-        }
-    }
-
-    @Override
     public void onCheckedChanged(RadioGroup radioGroup, int i) {
         int id = radioGroup.getCheckedRadioButtonId();
         switch(id) {
@@ -96,12 +69,14 @@ public class MainActivity extends ActivityBase implements View.OnClickListener, 
                     Toast.makeText(getApplicationContext(), "radio_controller", Toast.LENGTH_SHORT).show();
                 }
                 mDeviceRole = ROLE_CONTROLLER;
+                mVideoFragment.setButtonVisible();
                 break;
             case R.id.radio_viewer:
                 if (DBG) {
                     Toast.makeText(getApplicationContext(), "radio_viewer", Toast.LENGTH_SHORT).show();
                 }
                 mDeviceRole = ROLE_VIEWER;
+                mVideoFragment.setButtonInVisible();
                 break;
         }
     }
@@ -110,26 +85,20 @@ public class MainActivity extends ActivityBase implements View.OnClickListener, 
         mRoleButton = (RadioGroup) this.findViewById(R.id.radiogroup);
         mRoleButton.setOnCheckedChangeListener(this);
         mDeviceRole = ROLE_CONTROLLER;
-
-        mPlayButton = (Button) findViewById(R.id.btn_play);
-        mPlayButton.setOnClickListener(this);
-        mPlayButton.setEnabled(false);
-
-        mPauseButton = (Button) findViewById(R.id.btn_pause);
-        mPauseButton.setOnClickListener(this);
-        mPauseButton.setEnabled(false);
     }
 
     public static void updateUi(int msg) {
         switch (msg) {
             case Constants.MESSAGE_BT_CONNECTED:
                 if (mDeviceRole == MainActivity.ROLE_CONTROLLER) {
-                    mPlayButton.setEnabled(true);
-                    mPauseButton.setEnabled(true);
+                    mVideoFragment.enableButton();
                 } else {
                 }
                 break;
-
+            case Constants.MESSAGE_BT_DISCONNECTED:
+            default:
+                mVideoFragment.disableButton();
+                break;
         }
     }
 }

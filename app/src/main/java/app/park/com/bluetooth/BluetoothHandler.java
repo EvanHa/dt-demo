@@ -3,6 +3,8 @@ package app.park.com.bluetooth;
 import android.os.Handler;
 import android.os.Message;
 
+import app.park.com.MainActivity;
+
 public class BluetoothHandler extends Handler {
     public static final String TAG = BluetoothFragment.class.getSimpleName();
     public static final boolean DBG = true;
@@ -11,7 +13,7 @@ public class BluetoothHandler extends Handler {
         void sendCbMessage(int msgType, String msg);
     }
 
-    private ActivityCb mActivityCb = null;
+    public ActivityCb mActivityCb = null;
 
     /**
      * Name of the connected device
@@ -37,6 +39,7 @@ public class BluetoothHandler extends Handler {
                         if (mActivityCb != null) {
                             mActivityCb.sendCbMessage(Constants.MESSAGE_STATE_CHANGE, Constants.BLUETOOTH_CONNECTED);
                         }
+                        MainActivity.updateUi(Constants.MESSAGE_BT_CONNECTED);
                         break;
                     case BluetoothService.STATE_CONNECTING:
                         if (mActivityCb != null) {
@@ -48,6 +51,7 @@ public class BluetoothHandler extends Handler {
                         if (mActivityCb != null) {
                             mActivityCb.sendCbMessage(Constants.MESSAGE_STATE_CHANGE, Constants.BLUETOOTH_NONE);
                         }
+                        MainActivity.updateUi(Constants.MESSAGE_BT_DISCONNECTED);
                         break;
                 }
                 break;

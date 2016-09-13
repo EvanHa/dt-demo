@@ -10,15 +10,11 @@ import android.os.Handler;
 import android.support.v4.view.GestureDetectorCompat;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
-import android.view.View;
-import android.view.View.OnTouchListener;
-import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import java.text.DecimalFormat;
 import java.util.Timer;
-import java.util.TimerTask;
 
 import app.park.com.R;
 
@@ -111,7 +107,7 @@ public class TimeTaskTestActivity extends Activity implements
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		setContentView(R.layout.main_layout);
+		setContentView(R.layout.activity_control_view);
 /*
 		// 현재시간
 		textCTime = (TextView) findViewById(R.id.textCTime);

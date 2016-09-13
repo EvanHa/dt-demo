@@ -74,32 +74,13 @@
     </RadioGroup>
 
     <FrameLayout
-        android:id="@+id/button_fragment"
+        android:id="@+id/button_bluetooth_fragment"
         android:layout_width="match_parent"
         android:layout_height="wrap_content" />
 
-    <LinearLayout
+    <FrameLayout
+        android:id="@+id/button_video_fragment"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:visibility="visible">
-
-        <Button
-            android:id="@+id/btn_play"
-            android:layout_weight="1"
-            android:layout_width="0dp"
-            android:layout_height="@dimen/button_height"
-            android:onClick="OnClick"
-            android:text="@string/btn_play"/>
-
-        <Button
-            android:id="@+id/btn_pause"
-            android:layout_weight="1"
-            android:layout_width="0dp"
-            android:layout_height="@dimen/button_height"
-            android:onClick="OnClick"
-            android:text="@string/btn_pause"/>
-
-    </LinearLayout>
+        android:layout_height="wrap_content" />
 
 </LinearLayout>

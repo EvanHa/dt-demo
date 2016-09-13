@@ -130,6 +130,7 @@ public class BluetoothFragment extends Fragment {
      */
     public void setupBluetooth() {
         if (DBG) { Log.i(TAG, "setupBluetooth()"); }
+        Toast.makeText(getActivity(), "!!!!!!!!!!!!!!!!!!!", Toast.LENGTH_SHORT).show();
 
         // Initialize the array adapter for the conversation thread
         //mConversationArrayAdapter = new ArrayAdapter<String>(getActivity(), R.layout.message);
@@ -149,7 +150,9 @@ public class BluetoothFragment extends Fragment {
         });
 
         // Initialize the BluetoothService to perform bluetooth connections
-        mHandler = new BluetoothHandler();
+        if (mHandler == null) {
+            mHandler = new BluetoothHandler();
+        }
         mActivityCb = new BluetoothHandler.ActivityCb() {
             @Override
             public void sendCbMessage(int msgType, String msg) {
@@ -158,7 +161,6 @@ public class BluetoothFragment extends Fragment {
                         switch (msg) {
                             case Constants.BLUETOOTH_CONNECTED:
                                 setStatus(getString(R.string.title_connected_to, mConnectedDeviceName));
-                                MainActivity.updateUi(Constants.MESSAGE_BT_CONNECTED);
                                 break;
                             case Constants.BLUETOOTH_CONNECTING:
                                 setStatus(R.string.title_connecting);
@@ -185,10 +187,6 @@ public class BluetoothFragment extends Fragment {
                         mConnectedDeviceName = msg;
                         break;
                     case Constants.MESSAGE_TOAST:
-                        if (DBG) {
-                            FragmentActivity activity = getActivity();
-                            Toast.makeText(activity, msg, Toast.LENGTH_SHORT).show();
-                        }
                         break;
                     default:
                         break;

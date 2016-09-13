@@ -6,7 +6,8 @@
     android:gravity="center_horizontal"
     android:orientation="horizontal"
     android:padding="4dip"
-    android:src="@color/white">
+    android:src="@color/white"
+    android:background="@drawable/tile">
 
     <LinearLayout
         android:id="@+id/layoutLeft"

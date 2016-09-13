@@ -8,11 +8,9 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 import app.park.com.R;
-import app.park.com.control.OnSwipeTouchListener;
 
 import android.app.Activity;
 import android.app.AlertDialog;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
@@ -21,19 +19,13 @@ import android.hardware.SensorManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v4.view.GestureDetectorCompat;
-import android.support.v4.view.MotionEventCompat;
 import android.util.Log;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnTouchListener;
 import android.widget.ImageView;
-import android.widget.FrameLayout;
-import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.ListView;
-import android.widget.TextView;
-import android.widget.Toast;
 
 public class ContorlActivity extends Activity implements SensorEventListener,
 		GestureDetector.OnGestureListener {
@@ -220,7 +212,7 @@ public class ContorlActivity extends Activity implements SensorEventListener,
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		setContentView(R.layout.main_layout);
+		setContentView(R.layout.activity_control_view);
 		
 		scenarioList = new ArrayList<Scenario>();
 		
