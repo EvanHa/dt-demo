@@ -369,7 +369,7 @@ public class VrVideoActivity extends Activity {
                         }
                         break;
                     case Constants.MESSAGE_READ:
-
+                        String[] cmd = msg.split("||||");
                         break;
                     case Constants.MESSAGE_WRITE:
 
