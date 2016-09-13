@@ -8,6 +8,7 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 import app.park.com.R;
+import app.park.com.bluetooth.BluetoothService;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -32,7 +33,8 @@ public class ContorlActivity extends Activity implements SensorEventListener,
 	private SensorManager mSensorManager;
 	Sensor accelerometer;
 	Sensor magnetometer;
-	
+
+	private BluetoothService mBluetoothService = null;
 	private static List<Scenario> scenarioList;
     
 	ImageView frame;
@@ -213,6 +215,10 @@ public class ContorlActivity extends Activity implements SensorEventListener,
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_control_view);
+
+		if (mBluetoothService == null) {
+			mBluetoothService = BluetoothService.getInstance();
+		}
 		
 		scenarioList = new ArrayList<Scenario>();
 		
