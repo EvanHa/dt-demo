@@ -28,7 +28,7 @@ import android.view.View.OnTouchListener;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 
-public class ContorlActivity extends Activity implements SensorEventListener,
+public class ControlActivity extends Activity implements SensorEventListener,
 		GestureDetector.OnGestureListener {
 	private SensorManager mSensorManager;
 	Sensor accelerometer;
@@ -113,7 +113,7 @@ public class ContorlActivity extends Activity implements SensorEventListener,
             	// 일단 멈추고
             	onPause();
                 
-            	new AlertDialog.Builder(ContorlActivity.this)
+            	new AlertDialog.Builder(ControlActivity.this)
                 .setIcon(android.R.drawable.ic_dialog_alert)
                 .setTitle("점수가 60이하")
                 .setMessage("다시 하겠습니까?")

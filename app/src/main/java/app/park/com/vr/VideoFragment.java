@@ -12,7 +12,7 @@ import android.widget.LinearLayout;
 
 import app.park.com.R;
 import app.park.com.bluetooth.BluetoothService;
-import app.park.com.control.ContorlActivity;
+import app.park.com.control.ControlActivity;
 
 public class VideoFragment extends Fragment {
     public static final String TAG = VideoFragment.class.getSimpleName();
@@ -51,7 +51,7 @@ public class VideoFragment extends Fragment {
             public void onClick(View v) {
                 String message = "play";
                 mBluetoothService.sendMessage(message);
-                Intent intent = new Intent(getActivity(), ContorlActivity.class);
+                Intent intent = new Intent(getActivity(), ControlActivity.class);
                 startActivity(intent);
             }
         });

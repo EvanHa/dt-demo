@@ -5,7 +5,6 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.support.v4.app.FragmentActivity;
 import android.util.Log;
 import android.util.Pair;
 import android.widget.SeekBar;
@@ -19,12 +18,10 @@ import com.google.vr.sdk.widgets.video.VrVideoView;
 import com.google.vr.sdk.widgets.video.VrVideoView.Options;
 import java.io.IOException;
 
-import app.park.com.MainActivity;
 import app.park.com.R;
 import app.park.com.bluetooth.BluetoothHandler;
 import app.park.com.bluetooth.BluetoothService;
 import app.park.com.bluetooth.Constants;
-import app.park.com.control.ContorlActivity;
 
 /**
  * A test activity that renders a 360 video using {@link VrVideoView}.
