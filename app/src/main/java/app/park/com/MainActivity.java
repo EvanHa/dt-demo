@@ -1,20 +1,12 @@
 package app.park.com;
 
-import android.content.Intent;
 import android.support.v4.app.FragmentTransaction;
 import android.os.Bundle;
-import android.util.Log;
-import android.view.Menu;
-import android.view.MenuItem;
-import android.view.View;
-import android.widget.Button;
 import android.widget.RadioGroup;
 import android.widget.Toast;
-
 import app.park.com.bluetooth.BluetoothFragment;
 import app.park.com.bluetooth.Constants;
 import app.park.com.common.activities.ActivityBase;
-import app.park.com.control.ContorlActivity;
 import app.park.com.vr.VideoFragment;
 
 public class MainActivity extends ActivityBase implements RadioGroup.OnCheckedChangeListener {
@@ -27,9 +19,7 @@ public class MainActivity extends ActivityBase implements RadioGroup.OnCheckedCh
     public static BluetoothFragment mBluetoothFragment; // Bluetooth Control button
     public static VideoFragment mVideoFragment; // Video Button
     public static int mDeviceRole; // Device Role (Controller or Viewer)
-
-    // Button
-    private  static RadioGroup mRoleButton;
+    private static RadioGroup mRoleButton; // Device Role Radio Button
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -84,7 +74,7 @@ public class MainActivity extends ActivityBase implements RadioGroup.OnCheckedCh
     protected void init_button() {
         mRoleButton = (RadioGroup) this.findViewById(R.id.radiogroup);
         mRoleButton.setOnCheckedChangeListener(this);
-        mDeviceRole = ROLE_CONTROLLER;
+        mDeviceRole = ROLE_CONTROLLER; // Default role is controller
     }
 
     public static void updateUi(int msg) {

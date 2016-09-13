@@ -33,7 +33,6 @@ import android.widget.Button;
 import android.widget.Toast;
 
 import app.park.com.R;
-import app.park.com.MainActivity;
 import app.park.com.vr.VrVideoActivity;
 
 /**
@@ -130,7 +129,6 @@ public class BluetoothFragment extends Fragment {
      */
     public void setupBluetooth() {
         if (DBG) { Log.i(TAG, "setupBluetooth()"); }
-        Toast.makeText(getActivity(), "!!!!!!!!!!!!!!!!!!!", Toast.LENGTH_SHORT).show();
 
         // Initialize the array adapter for the conversation thread
         //mConversationArrayAdapter = new ArrayAdapter<String>(getActivity(), R.layout.message);

@@ -1,21 +1,16 @@
 package app.park.com.vr;
 
-import android.bluetooth.BluetoothAdapter;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentActivity;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.LinearLayout;
-import android.widget.Toast;
 
 import app.park.com.R;
-import app.park.com.bluetooth.BluetoothDeviceList;
 import app.park.com.bluetooth.BluetoothService;
 import app.park.com.control.ContorlActivity;
 
