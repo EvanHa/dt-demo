@@ -292,8 +292,6 @@ public class VrVideoActivity extends Activity {
                                 break;
                             case Constants.BLUETOOTH_NONE:
                                 Toast.makeText(getApplicationContext(), "BT DISCONNECT!!!", Toast.LENGTH_SHORT).show();
-                                Intent intent = new Intent(getApplicationContext(), MainActivity.class);
-                                startActivity(intent);
                                 break;
                         }
                         break;

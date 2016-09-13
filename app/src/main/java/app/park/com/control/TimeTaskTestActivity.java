@@ -112,7 +112,7 @@ public class TimeTaskTestActivity extends Activity implements
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.main_layout);
-
+/*
 		// 현재시간
 		textCTime = (TextView) findViewById(R.id.textCTime);
 		textCTime.setText("0.0");
@@ -206,7 +206,7 @@ public class TimeTaskTestActivity extends Activity implements
 				return true;
 			}
 		});
-
+*/
 		mDetector = new GestureDetectorCompat(this, this);
 	}
 	
