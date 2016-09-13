@@ -5,11 +5,9 @@ import android.support.v4.app.FragmentActivity;
 import app.park.com.common.logger.Log;
 import app.park.com.common.logger.LogWrapper;
 
-/**
- * Created by MH on 2016-07-26.
- */
 public class ActivityBase extends FragmentActivity {
-    public static final String TAG = "SampleActivityBase";
+    public static final String TAG = ActivityBase.class.getSimpleName();
+    public static final boolean DBG = true;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -19,7 +17,9 @@ public class ActivityBase extends FragmentActivity {
     @Override
     protected  void onStart() {
         super.onStart();
-        initializeLogging();
+        if (DBG) {
+            initializeLogging();
+        }
     }
 
     /** Set up targets to receive log data */

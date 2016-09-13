@@ -21,15 +21,19 @@ import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothServerSocket;
 import android.bluetooth.BluetoothSocket;
 import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
+import android.widget.Toast;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.UUID;
+
+import app.park.com.R;
 
 /**
  * This class does all the work for setting up and managing Bluetooth
@@ -39,21 +43,23 @@ import java.util.UUID;
  */
 public class BluetoothService {
     // Debugging
-    private static final String TAG = "BluetoothService";
+    public static final String TAG = BluetoothService.class.getSimpleName();
+    public static final boolean DBG = true;
 
     // Name for the SDP record when creating server socket
     private static final String NAME_SECURE = "BluetoothSecure";
     private static final String NAME_INSECURE = "BluetoothInsecure";
 
     // Unique UUID for this application
-    private static final UUID MY_UUID_SECURE =
-            UUID.fromString("fa87c0d0-afac-11de-8a39-0800200c9a66");
-    private static final UUID MY_UUID_INSECURE =
-            UUID.fromString("8ce255c0-200a-11e0-ac64-0800200c9a66");
+    private static final UUID MY_UUID_SECURE = UUID.fromString("fa87c0d0-afac-11de-8a39-0800200c9a66");
+    private static final UUID MY_UUID_INSECURE = UUID.fromString("8ce255c0-200a-11e0-ac64-0800200c9a66");
 
+    // Bluetooth Service instance
+    private static BluetoothService mBluetoothService;
     // Member fields
-    private final BluetoothAdapter mAdapter;
-    private final Handler mHandler;
+    private BluetoothAdapter mBluetoothAdapter = null;
+    private BluetoothAdapter mAdapter = null;
+    private Handler mHandler = null;
     private AcceptThread mSecureAcceptThread;
     private AcceptThread mInsecureAcceptThread;
     private ConnectThread mConnectThread;
@@ -67,7 +73,51 @@ public class BluetoothService {
     public static final int STATE_CONNECTED = 3;  // now connected to a remote device
 
     /**
-     * Constructor. Prepares a new BluetoothChat session.
+     * Get the Bluetooth Service Instance
+     * @return Bluetooth Service Instance
+     */
+    public static BluetoothService getInstance() {
+        if (mBluetoothService == null) {
+            mBluetoothService = new BluetoothService();
+        }
+        return mBluetoothService;
+    }
+
+    /**
+     * Constructor. Prepares a new BluetoothService.
+     */
+    public BluetoothService() {
+        mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+        //mAdapter = BluetoothAdapter.getDefaultAdapter();
+        mState = STATE_NONE;
+    }
+
+    /**
+     * Bluetooth Support Check
+     * @return If supported, return true
+     */
+    public boolean isBluetoothSupported() {
+        boolean result = true;
+        if (mBluetoothAdapter == null) {
+            result = false;
+        }
+        return result;
+    }
+
+    public boolean isEnabled() {
+        return mBluetoothAdapter.isEnabled();
+    }
+
+    public int getScanMode() {
+        return mBluetoothAdapter.getScanMode();
+    }
+
+    public void setActivityHandler(BluetoothHandler handler) {
+        mHandler = handler;
+    }
+
+    /**
+     * Constructor. Prepares a new BluetoothService.
      *
      * @param context The UI Activity Context
      * @param handler A Handler to send messages back to the UI Activity
@@ -84,7 +134,9 @@ public class BluetoothService {
      * @param state An integer defining the current connection state
      */
     private synchronized void setState(int state) {
-        Log.d(TAG, "setState() " + mState + " -> " + state);
+        if (DBG) {
+            Log.d(TAG, "setState() " + mState + " -> " + state);
+        }
         mState = state;
 
         // Give the new state to the Handler so the UI Activity can update
@@ -298,10 +350,10 @@ public class BluetoothService {
             // Create a new listening server socket
             try {
                 if (secure) {
-                    tmp = mAdapter.listenUsingRfcommWithServiceRecord(NAME_SECURE,
+                    tmp = mBluetoothAdapter.listenUsingRfcommWithServiceRecord(NAME_SECURE,
                             MY_UUID_SECURE);
                 } else {
-                    tmp = mAdapter.listenUsingInsecureRfcommWithServiceRecord(
+                    tmp = mBluetoothAdapter.listenUsingInsecureRfcommWithServiceRecord(
                             NAME_INSECURE, MY_UUID_INSECURE);
                 }
             } catch (IOException e) {
@@ -402,7 +454,7 @@ public class BluetoothService {
             setName("ConnectThread" + mSocketType);
 
             // Always cancel discovery because it will slow down a connection
-            mAdapter.cancelDiscovery();
+            mBluetoothAdapter.cancelDiscovery();
 
             // Make a connection to the BluetoothSocket
             try {
@@ -514,5 +566,27 @@ public class BluetoothService {
                 Log.e(TAG, "close() of connect socket failed", e);
             }
         }
+    }
+
+    /**
+     * Sends a message.
+     *
+     * @param message A string of text to send.
+     */
+    public void sendMessage(String message) {
+        if (mBluetoothService.getState() != BluetoothService.STATE_CONNECTED) {
+            return;
+        }
+
+        // Check that there's actually something to send
+        if (message.length() > 0) {
+            // Get the message bytes and tell the BluetoothService to write
+            byte[] send = message.getBytes();
+            mBluetoothService.write(send);
+        }
+    }
+
+    public BluetoothDevice getRemoteDevice(String addr) {
+        return mBluetoothAdapter.getRemoteDevice(addr);
     }
 }

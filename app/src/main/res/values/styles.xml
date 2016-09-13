@@ -13,12 +13,12 @@
     <!-- Widget styling -->
     <style name="Widget" />
 
-    <style name="Widget.SampleMessage">
-        <item name="android:textAppearance">?android:textAppearanceMedium</item>
+    <style name="Widget.Message">
+        <item name="android:textAppearance">?android:attr/textAppearanceMediumInverse</item>
         <item name="android:lineSpacingMultiplier">1.1</item>
     </style>
 
-    <style name="Widget.SampleMessageTile">
+    <style name="Widget.MessageTile">
         <item name="android:background">@drawable/tile</item>
         <item name="android:shadowColor">#7F000000</item>
         <item name="android:shadowDy">-3.5</item>

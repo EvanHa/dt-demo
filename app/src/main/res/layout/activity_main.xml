@@ -6,7 +6,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:id="@+id/main_layout"
-    tools:context="app.park.com.ui.MainActivity">
+    tools:context=".MainActivity">
 
     <ViewAnimator
         android:id="@+id/output"
@@ -14,18 +14,18 @@
         android:layout_height="wrap_content">
 
         <ScrollView
-            style="@style/Widget.SampleMessageTile"
             android:layout_width="match_parent"
-            android:layout_height="match_parent">
+            android:layout_height="match_parent"
+            style="@style/Widget.MessageTile">
 
             <TextView
-                style="@style/Widget.SampleMessage"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:paddingLeft="@dimen/horizontal_page_margin"
                 android:paddingRight="@dimen/horizontal_page_margin"
                 android:paddingTop="@dimen/vertical_page_margin"
                 android:paddingBottom="@dimen/vertical_page_margin"
+                style="@style/Widget.Message"
                 android:text="@string/intro_message" />
         </ScrollView>
 
@@ -101,11 +101,5 @@
             android:text="@string/btn_pause"/>
 
     </LinearLayout>
-
-    <VideoView
-        android:id="@+id/video_view"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center" />
 
 </LinearLayout>

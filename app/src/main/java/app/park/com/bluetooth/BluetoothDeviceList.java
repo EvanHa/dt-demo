@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package app.park.com.ui;
+package app.park.com.bluetooth;
 
 import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
@@ -43,12 +43,9 @@ import app.park.com.R;
  * by the user, the MAC address of the device is sent back to the parent
  * Activity in the result Intent.
  */
-public class DeviceListActivity extends Activity {
+public class BluetoothDeviceList extends Activity {
 
-    /**
-     * Tag for Log
-     */
-    private static final String TAG = "DeviceListActivity";
+    private static final String TAG = BluetoothDeviceList.class.getSimpleName();
 
     /**
      * Return Intent extra

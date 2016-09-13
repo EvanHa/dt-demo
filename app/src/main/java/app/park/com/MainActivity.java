@@ -1,43 +1,35 @@
-package app.park.com.ui;
+package app.park.com;
 
-import android.content.Context;
 import android.content.Intent;
-import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentTransaction;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.util.AttributeSet;
 import android.util.Log;
 import android.view.Menu;
-import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
-import android.widget.LinearLayout;
-import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.Toast;
-import android.widget.ViewAnimator;
 
 import app.park.com.bluetooth.BluetoothFragment;
-import app.park.com.R;
 import app.park.com.bluetooth.Constants;
 import app.park.com.common.activities.ActivityBase;
 import app.park.com.control.ContorlActivity;
-import app.park.com.vr.VrVideoActivity;
 
 public class MainActivity extends ActivityBase implements View.OnClickListener, RadioGroup.OnCheckedChangeListener {
-
     public static final String TAG = MainActivity.class.getSimpleName();
+    public static final boolean DBG = false;
+
     public static final int ROLE_CONTROLLER = 1;
     public static final int ROLE_VIEWER = 2;
 
-    static public BluetoothFragment mBT_Fragment;
-    static public int mDeviceRole;
+    public static BluetoothFragment mBluetoothFragment; // Bluetooth Control button
+    public static int mDeviceRole; // Device Role (Controller or Viewer)
+
     // Button
-    static private  RadioGroup mRoleButton;
-    static private  Button mPlayButton;
-    static private  Button mPauseButton;
+    private  static RadioGroup mRoleButton;
+    private  static Button mPlayButton;
+    private  static Button mPauseButton;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -47,10 +39,11 @@ public class MainActivity extends ActivityBase implements View.OnClickListener, 
 
         if (savedInstanceState == null) {
             FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-            mBT_Fragment = new BluetoothFragment();
-            transaction.replace(R.id.button_fragment, mBT_Fragment);
+            mBluetoothFragment = new BluetoothFragment();
+            transaction.replace(R.id.button_fragment, mBluetoothFragment);
             transaction.commit();
         }
+
     }
 
     @Override
@@ -64,34 +57,32 @@ public class MainActivity extends ActivityBase implements View.OnClickListener, 
     }
 
     @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        MenuItem logToggle = menu.findItem(R.id.menu_toggle_log);
-        return super.onCreateOptionsMenu(menu);
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-
-        }
-        return false;
-    }
-
-    @Override
     public void onClick(View view) {
         String message;
         switch(view.getId()) {
             case R.id.btn_pause:
-                Toast.makeText(getApplicationContext(), "btn_pause", Toast.LENGTH_SHORT).show();
-                message = "pause";
-                mBT_Fragment.sendMessage(message);
+                if (DBG) {
+                    Toast.makeText(getApplicationContext(), "btn_pause", Toast.LENGTH_SHORT).show();
+                }
+                if (mBluetoothFragment != null) {
+                    message = "pause";
+                    mBluetoothFragment.sendMessage(message);
+                } else {
+                    Log.e(TAG, "Can't use bluetooth module");
+                }
                 break;
             case R.id.btn_play:
-                Toast.makeText(getApplicationContext(), "btn_play", Toast.LENGTH_SHORT).show();
-                message = "play";
-                mBT_Fragment.sendMessage(message);
-                Intent intent = new Intent(getApplicationContext() , ContorlActivity.class);
-                startActivity(intent);
+                if (DBG) {
+                    Toast.makeText(getApplicationContext(), "btn_play", Toast.LENGTH_SHORT).show();
+                }
+                if (mBluetoothFragment != null) {
+                    message = "play";
+                    mBluetoothFragment.sendMessage(message);
+                    Intent intent = new Intent(getApplicationContext(), ContorlActivity.class);
+                    startActivity(intent);
+                } else {
+                    Log.e(TAG, "Can't use bluetooth module");
+                }
                 break;
         }
     }
@@ -101,11 +92,15 @@ public class MainActivity extends ActivityBase implements View.OnClickListener, 
         int id = radioGroup.getCheckedRadioButtonId();
         switch(id) {
             case R.id.radio_controller:
-                Toast.makeText(getApplicationContext(), "radio_controller", Toast.LENGTH_SHORT).show();
+                if (DBG) {
+                    Toast.makeText(getApplicationContext(), "radio_controller", Toast.LENGTH_SHORT).show();
+                }
                 mDeviceRole = ROLE_CONTROLLER;
                 break;
             case R.id.radio_viewer:
-                Toast.makeText(getApplicationContext(), "radio_viewer", Toast.LENGTH_SHORT).show();
+                if (DBG) {
+                    Toast.makeText(getApplicationContext(), "radio_viewer", Toast.LENGTH_SHORT).show();
+                }
                 mDeviceRole = ROLE_VIEWER;
                 break;
         }
@@ -123,10 +118,6 @@ public class MainActivity extends ActivityBase implements View.OnClickListener, 
         mPauseButton = (Button) findViewById(R.id.btn_pause);
         mPauseButton.setOnClickListener(this);
         mPauseButton.setEnabled(false);
-    }
-
-    public int getDeviceRole() {
-        return this.mDeviceRole;
     }
 
     public static void updateUi(int msg) {
