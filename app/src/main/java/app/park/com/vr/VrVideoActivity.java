@@ -289,6 +289,7 @@ public class VrVideoActivity extends Activity {
     protected void onResume() {
         super.onResume();
         //register Receiver
+
         registerReceiver();
         // Resume the 3D rendering.
         videoWidgetView.resumeRendering();
@@ -392,9 +393,9 @@ public class VrVideoActivity extends Activity {
                             setSpeed(speed);
 
                             if(arr[0].equals("play")){
-                                onResume();
+                                //onResume();
                             }else if(arr[0].equals("stop")){
-                                onPause();
+                                //onPause();
                             }
                         }
                         break;
@@ -562,9 +563,7 @@ public class VrVideoActivity extends Activity {
         public void onLoadError(String errorMessage) {
             // An error here is normally due to being unable to decode the video format.
             loadVideoStatus = LOAD_VIDEO_STATUS_ERROR;
-            Toast.makeText(
-                    VrVideoActivity.this, "Error loading video: " + errorMessage, Toast.LENGTH_LONG)
-                    .show();
+            Toast.makeText(VrVideoActivity.this, "Error loading video: " + errorMessage, Toast.LENGTH_LONG).show();
             Log.e(TAG, "Error loading video: " + errorMessage);
         }
 
@@ -580,14 +579,11 @@ public class VrVideoActivity extends Activity {
         //change onNewFrame for play speed control with speed factor from bluetooth
         public void onNewFrame() {
             int speed = getSpeed();
-            Log.i(TAG, "***current***   " + videoWidgetView.getCurrentPosition());
             updateStatusText();
-            seekBar.setProgress((int) videoWidgetView.getCurrentPosition());
             if (!isPaused) {
-                seekBar.setProgress(((int) videoWidgetView.getCurrentPosition())+ speed);
-                long i = (long) (videoWidgetView.getCurrentPosition() + speed);
-                videoWidgetView.seekTo(i);
-                Log.i(TAG, "***changed current***   " + videoWidgetView.getCurrentPosition());
+                int videoPosition = (int) (videoWidgetView.getCurrentPosition() + speed);
+                seekBar.setProgress(videoPosition);
+                //Log.i(TAG, " vP " + videoPosition);
             }
         }
 
