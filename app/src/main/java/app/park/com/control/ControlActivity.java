@@ -150,7 +150,7 @@ public class ControlActivity extends Activity implements SensorEventListener,
                 	score -= 5;
 //            		textScore.setText(score + " 점");
                 	Log.d("test", "엑셀 안누름");
-					mBluetoothService.sendMessage("cmd||||"+velocity+"||||"+score);
+					mBluetoothService.sendMessage("cmd////"+velocity+"////"+score);
             	}
             }
             // 시나리오1 수행 여부에 따라서 점수 감점
@@ -163,7 +163,7 @@ public class ControlActivity extends Activity implements SensorEventListener,
             		score -= 5;
 //            		textScore.setText(score + " 점");
             		Log.d("test", "브레이크 안누름");
-					mBluetoothService.sendMessage("cmd||||"+velocity+"||||"+score);
+					mBluetoothService.sendMessage("cmd////"+velocity+"////"+score);
             	}
             }
             
@@ -173,7 +173,7 @@ public class ControlActivity extends Activity implements SensorEventListener,
             		score -= 10;
 //            		textScore.setText(score + " 점");
             		Log.d("test", "왼쪽 깜빡이 또는 좌회전 안했음");
-					mBluetoothService.sendMessage("cmd||||"+velocity+"||||"+score);
+					mBluetoothService.sendMessage("cmd////"+velocity+"////"+score);
             	}
             }
             
@@ -183,7 +183,7 @@ public class ControlActivity extends Activity implements SensorEventListener,
             		score -= 10;
 //            		textScore.setText(score + " 점");
             		Log.d("test", "오른쪽 깜빡이 또는 우회전 안했음");
-					mBluetoothService.sendMessage("cmd||||"+velocity+"||||"+score);
+					mBluetoothService.sendMessage("cmd////"+velocity+"////"+score);
             	}
             }
             
@@ -193,7 +193,7 @@ public class ControlActivity extends Activity implements SensorEventListener,
             		score -= 10;
 //            		textScore.setText(score + " 점");
             		Log.d("test", "직진 안했음");
-					mBluetoothService.sendMessage("cmd||||"+velocity+"||||"+score);
+					mBluetoothService.sendMessage("cmd////"+velocity+"////"+score);
             	}
             }
         }
@@ -377,7 +377,7 @@ public class ControlActivity extends Activity implements SensorEventListener,
 								velocity = velocity.add(VELOCITY_INCREASE);
 								Log.d("test", "엑셀 속도증가 +0.1");
 
-								mBluetoothService.sendMessage("cmd||||"+velocity+"||||"+score);
+								mBluetoothService.sendMessage("cmd////"+velocity+"////"+score);
 								
 	//							velocity += VELOCITY_ACC;
 	//							textVelocity.post(new Runnable() {
@@ -415,7 +415,7 @@ public class ControlActivity extends Activity implements SensorEventListener,
 									velocity = velocity.subtract(VELOCITY_INCREASE);
 									Log.d("test", "자연 속도감소 -0.1");
 
-									mBluetoothService.sendMessage("cmd||||"+velocity+"||||"+score);
+									mBluetoothService.sendMessage("cmd////"+velocity+"////"+score);
 								}
 							}
 						}, 1000, 1000);
@@ -466,7 +466,7 @@ public class ControlActivity extends Activity implements SensorEventListener,
 									velocity = velocity.subtract(VELOCITY_BREAK_DECREASE);
 									Log.d("test", "브레이크 속도감소 -0.5");
 									
-									mBluetoothService.sendMessage("cmd||||"+velocity+"||||"+score);
+									mBluetoothService.sendMessage("cmd////"+velocity+"////"+score);
 								}
 							}
 
@@ -503,7 +503,7 @@ public class ControlActivity extends Activity implements SensorEventListener,
 //								sendMessage("cmd||||" + velocity + "||||" + score);
 								Log.d("test", "자연 속도감소 -0.1");
 								
-								mBluetoothService.sendMessage("cmd||||"+velocity+"||||"+score);
+								mBluetoothService.sendMessage("cmd////"+velocity+"////"+score);
 							}
 						}
 					}, 1000, 1000);
