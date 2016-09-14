@@ -9,13 +9,12 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
 import android.util.Pair;
+import android.view.View;
 import android.widget.Button;
 import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.google.android.gms.appindexing.AppIndex;
-import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.vr.sdk.widgets.video.VrVideoEventListener;
 import com.google.vr.sdk.widgets.video.VrVideoView;
 import com.google.vr.sdk.widgets.video.VrVideoView.Options;
@@ -52,7 +51,8 @@ import app.park.com.bluetooth.Constants;
  * --ei inputType 2
  */
 public class VrVideoActivity extends Activity {
-    private static final String TAG = VrVideoActivity.class.getSimpleName();
+    public static final String TAG = VrVideoActivity.class.getSimpleName();
+    public static final boolean DBG = true;
 
     /**
      * Preserve the video's state when rotating the phone.
@@ -76,11 +76,6 @@ public class VrVideoActivity extends Activity {
     public static final int LOAD_VIDEO_STATUS_ERROR = 2;
 
     private int loadVideoStatus = LOAD_VIDEO_STATUS_UNKNOWN;
-    /**
-     * ATTENTION: This was auto-generated to implement the App Indexing API.
-     * See https://g.co/AppIndexing/AndroidStudio for more information.
-     */
-    private GoogleApiClient client;
 
     public int getLoadVideoStatus() {
         return loadVideoStatus;
@@ -95,7 +90,6 @@ public class VrVideoActivity extends Activity {
      * Configuration information for the video.
      **/
     private Options videoOptions = new Options();
-
     private VideoLoaderTask backgroundVideoLoaderTask;
 
     /**
@@ -111,21 +105,14 @@ public class VrVideoActivity extends Activity {
     private TextView statusText;
 
     //create speed factor to control speed (get it through bluetooth panel) by sw
-    private int speedFactor;
-    private double speed;
-    private Button btn_accel;
-    private Button btn_break;
-    private Button btn_reset;
-    //game score
-    private int score;
-    //turn direction: 1 right, 2 left
-    private int turn;
+    private double mSpeed;
+    private int score;           //game score
+    private int turn;            //turn direction: 1 right, 2 left
 
     //broadcast receiver message
     private final String BROADCAST_MESSAGE = "com.broadcastreceiver.VRVIDEOACTIVITY";
     //broadcast receiver
     BroadcastReceiver brRev;
-
 
     /**
      * By default, the video will start playing as soon as it is loaded. This can be changed by using
@@ -137,6 +124,15 @@ public class VrVideoActivity extends Activity {
     private BluetoothHandler mHandler = null;
     private BluetoothHandler.ActivityCb mActivityCb = null;
 
+    private Button mSpeedTest;
+    private double prevTime;
+    private double currTime;
+    private long prevVideoTime;
+    private long currVideoTime;
+    private int mPrevCount;
+    private int mCurrCount;
+    private boolean mUpdateFlag = false;
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
 
@@ -146,6 +142,17 @@ public class VrVideoActivity extends Activity {
         seekBar = (SeekBar) findViewById(R.id.seek_bar);
         seekBar.setOnSeekBarChangeListener(new SeekBarListener());
         statusText = (TextView) findViewById(R.id.status_text);
+
+        mSpeedTest = (Button) findViewById(R.id.speed_test);
+        mSpeedTest.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Log.d(TAG, "Click");
+            }
+        });
+
+        mPrevCount = 0;
+        mCurrCount = 0;
 
         //brRev = new BroadcastReceiver();
 
@@ -197,10 +204,6 @@ public class VrVideoActivity extends Activity {
 
         // Initial launch of the app or an Activity recreation due to rotation.
         handleIntent(getIntent());
-        // ATTENTION: This was auto-generated to implement the App Indexing API.
-        // See https://g.co/AppIndexing/AndroidStudio for more information.
-        client = new GoogleApiClient.Builder(this).addApi(AppIndex.API).build();
-
         mBluetoothService = BluetoothService.getInstance();
     }
 
@@ -334,22 +337,6 @@ public class VrVideoActivity extends Activity {
     @Override
     public void onStart() {
         super.onStart();
-/*
-        // ATTENTION: This was auto-generated to implement the App Indexing API.
-        // See https://g.co/AppIndexing/AndroidStudio for more information.
-        client.connect();
-        Action viewAction = Action.newAction(
-                Action.TYPE_VIEW, // TODO: choose an action type.
-                "VrVideo Page", // TODO: Define a title for the content shown.
-                // TODO: If you have web page content that matches this app activity's content,
-                // make sure this auto-generated web page URL is correct.
-                // Otherwise, set the URL to null.
-                Uri.parse("http://host/path"),
-                // TODO: Make sure this auto-generated app URL is correct.
-                Uri.parse("android-app://app.park.com.ui/http/host/path")
-        );
-        AppIndex.AppIndexApi.start(client, viewAction);
-*/
 		Log.i("TAG","********Status-Start********");
 
         mHandler = new BluetoothHandler();
@@ -415,46 +402,29 @@ public class VrVideoActivity extends Activity {
         mBluetoothService.setActivityHandler(mHandler);
     }
 
+    protected void handleCommand(String[] arr){
+
+    }
+
     @Override
     public void onStop() {
         super.onStop();
-/*
-        // ATTENTION: This was auto-generated to implement the App Indexing API.
-        // See https://g.co/AppIndexing/AndroidStudio for more information.
-        Action viewAction = Action.newAction(
-                Action.TYPE_VIEW, // TODO: choose an action type.
-                "VrVideo Page", // TODO: Define a title for the content shown.
-                // TODO: If you have web page content that matches this app activity's content,
-                // make sure this auto-generated web page URL is correct.
-                // Otherwise, set the URL to null.
-                Uri.parse("http://host/path"),
-                // TODO: Make sure this auto-generated app URL is correct.
-                Uri.parse("android-app://app.park.com.ui/http/host/path")
-        );
-        AppIndex.AppIndexApi.end(client, viewAction);
-*/
-        client.disconnect();
-
     }
 
     //set speed factor(multiplication of 1000 to make factor as millisecond)
-    public void setSpeed(double speed){
-        double temp;
-        if(speed == 0){
-            temp = 0;
-        }else{
-            temp = 1000 * speed;
+    private void setSpeed(double speed){
+        if(speed != 0){
+            mSpeed = 1000 * speed;
         }
-        speedFactor = (int)temp;
     }
 
     //get current speed
-    public int getSpeed(){
-        return speedFactor;
+    public double getSpeed(){
+        return mSpeed;
     }
 
     //set score
-    public void setScore(int i){
+    private void setScore(int i){
         score = i;
     }
 
@@ -464,7 +434,7 @@ public class VrVideoActivity extends Activity {
     }
 
     //set turn factor
-    public void setTurn(int i){
+    private void setTurn(int i){
         turn = i;
     }
 
@@ -480,7 +450,6 @@ public class VrVideoActivity extends Activity {
     }
 
     private void registerReceiver(){
-
         Log.i("TAG","********brRev********" + brRev);
 
         if(brRev != null) return;
@@ -502,22 +471,15 @@ public class VrVideoActivity extends Activity {
         Log.i("TAG","********unregister receiver********");
     }
 
-
-
     //braodcast receiver to get command from bluetooth
     private class BroadcastReceiver extends android.content.BroadcastReceiver{
         @Override
         public void onReceive(Context context, Intent intent) {
             Bundle bundle = intent.getExtras();
             String[] cmd = bundle.getString("cmd").split("||||");
-
             if(cmd.length == 2){
-
             }
-
-
         }
-
     }
 
     /**
@@ -545,6 +507,7 @@ public class VrVideoActivity extends Activity {
      * Listen to the important events from widget.
      */
     private class ActivityEventListener extends VrVideoEventListener {
+
         /**
          * Called by video widget on the UI thread when it's done loading the video.
          */
@@ -578,12 +541,26 @@ public class VrVideoActivity extends Activity {
         @Override
         //change onNewFrame for play speed control with speed factor from bluetooth
         public void onNewFrame() {
-            int speed = getSpeed();
-            updateStatusText();
+            prevTime = currTime;
+            currTime = videoWidgetView.getCurrentPosition();
+            Log.d(TAG, " Time gap = " + (currTime-prevTime));
             if (!isPaused) {
-                int videoPosition = (int) (videoWidgetView.getCurrentPosition() + speed);
-                seekBar.setProgress(videoPosition);
+                //videoWidgetView.pauseVideo();
+                double speed = getSpeed();
+                long videoPosition = videoWidgetView.getCurrentPosition();
+                seekBar.setProgress((int)videoPosition);
+                mCurrCount = (int)videoPosition/500;
+                if (((mCurrCount-mPrevCount)>0)) {
+                    videoWidgetView.pauseVideo();
+                    videoWidgetView.seekTo(videoPosition+500);
+                    videoWidgetView.playVideo();
+                }
+                mPrevCount = mCurrCount;
                 //Log.i(TAG, " vP " + videoPosition);
+                Log.d(TAG, " Time gap = " + (videoPosition-prevVideoTime));
+                prevVideoTime = videoPosition;
+                //videoWidgetView.playVideo();
+                updateStatusText();
             }
         }
 
@@ -642,6 +619,7 @@ public class VrVideoActivity extends Activity {
         protected void onPostExecute(Boolean aBoolean) {
             try {
                 if (aBoolean) {
+                    videoWidgetView.setDisplayMode(2);
                     videoWidgetView.loadVideoFromAsset("car.mp4", videoOptions);
                 } else {
                     videoWidgetView.loadVideo(videoUri, videoOptions);
