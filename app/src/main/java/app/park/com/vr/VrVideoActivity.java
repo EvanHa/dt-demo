@@ -350,7 +350,7 @@ public class VrVideoActivity extends Activity {
         AppIndex.AppIndexApi.start(client, viewAction);
 */
 		Log.i("TAG","********Status-Start********");
-		
+
         mHandler = new BluetoothHandler();
         mActivityCb = new BluetoothHandler.ActivityCb() {
             @Override
@@ -369,7 +369,34 @@ public class VrVideoActivity extends Activity {
                         }
                         break;
                     case Constants.MESSAGE_READ:
-                        String[] cmd = msg.split("||||");
+                        String[] arr = msg.split("////");
+                        Log.i("TAG", "*******" + msg);
+                        Log.i("TAG", "*******" + arr.length);
+                        Log.i("TAG", "*******" + arr[0]);
+
+                        // play||||1,2,3 -> 1,2,3번 동영상 재생
+                        // stop||||1,2,3 -> 현재 동영상 멈춤
+                        if(arr.length == 2) {
+                            if(arr[0].equals("play")){
+                                //play
+                            }else if(arr[0].equals("stop")){
+                                //stop
+                            }
+                        // cmd|||||40||||90 -> 속도 40, 점수 90
+                        }else if(arr.length == 3){
+                            // 해당 속도, 점수 업뎃 쳐줌
+                            int score = Integer.parseInt(arr[2]);
+                            setScore(score);
+
+                            double speed = Double.parseDouble((arr[1]));
+                            setSpeed(speed);
+
+                            if(arr[0].equals("play")){
+                                onResume();
+                            }else if(arr[0].equals("stop")){
+                                onPause();
+                            }
+                        }
                         break;
                     case Constants.MESSAGE_WRITE:
 
