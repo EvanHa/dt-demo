@@ -104,12 +104,12 @@ public class ControlActivity extends Activity implements SensorEventListener,
     public Runnable timerRunnable = new Runnable() {
         public void run() {
             timerHandler.postDelayed(this, 1000);
-//			Log.d("test", "isAccPressed = " + isAccPressed + ", isBreakPressed = " + isBreakPressed);
-			Log.d("test", "velocity = " + velocity);
+//			Log.d("TAG", "isAccPressed = " + isAccPressed + ", isBreakPressed = " + isBreakPressed);
+			Log.d("TAG", "velocity = " + velocity);
 			
 			
             // 60점 이하면
-            if(!exit && score < 60) {
+            if(!exit && score <= 60) {
             	// 일단 멈추고
             	onPause();
                 
@@ -139,7 +139,7 @@ public class ControlActivity extends Activity implements SensorEventListener,
             seconds_ = seconds_ % 60;
             
 
-    		Log.d("test", String.format("%02d:%02d", minutes, seconds_));
+    		Log.d("TAG", String.format("%02d:%02d", minutes, seconds_));
 
 //            textCTime.setText(String.format("%02d:%02d", minutes, seconds_));
             
@@ -149,8 +149,9 @@ public class ControlActivity extends Activity implements SensorEventListener,
                 	// 5점 감점
                 	score -= 5;
 //            		textScore.setText(score + " 점");
-                	Log.d("test", "엑셀 안누름");
-					mBluetoothService.sendMessage("cmd////"+velocity+"////"+score);
+                	Log.d("TAG", "엑셀 안누름");
+					mBluetoothService.sendMessage("cmd////" + velocity.doubleValue() + "////" + score);
+					Log.d("TAG", "cmd////" + velocity + "////" + score);
             	}
             }
             // 시나리오1 수행 여부에 따라서 점수 감점
@@ -162,8 +163,9 @@ public class ControlActivity extends Activity implements SensorEventListener,
             		// 5점 감점
             		score -= 5;
 //            		textScore.setText(score + " 점");
-            		Log.d("test", "브레이크 안누름");
-					mBluetoothService.sendMessage("cmd////"+velocity+"////"+score);
+            		Log.d("TAG", "브레이크 안누름");
+					mBluetoothService.sendMessage("cmd////" + velocity.doubleValue() + "////" + score);
+					Log.d("TAG", "cmd////" + velocity + "////" + score);
             	}
             }
             
@@ -172,8 +174,9 @@ public class ControlActivity extends Activity implements SensorEventListener,
             		// 10점 감점
             		score -= 10;
 //            		textScore.setText(score + " 점");
-            		Log.d("test", "왼쪽 깜빡이 또는 좌회전 안했음");
-					mBluetoothService.sendMessage("cmd////"+velocity+"////"+score);
+            		Log.d("TAG", "왼쪽 깜빡이 또는 좌회전 안했음");
+					mBluetoothService.sendMessage("cmd////" + velocity.doubleValue() + "////" + score);
+					Log.d("TAG", "cmd////" + velocity + "////" + score);
             	}
             }
             
@@ -182,8 +185,9 @@ public class ControlActivity extends Activity implements SensorEventListener,
             		// 10점 감점
             		score -= 10;
 //            		textScore.setText(score + " 점");
-            		Log.d("test", "오른쪽 깜빡이 또는 우회전 안했음");
-					mBluetoothService.sendMessage("cmd////"+velocity+"////"+score);
+            		Log.d("TAG", "오른쪽 깜빡이 또는 우회전 안했음");
+					mBluetoothService.sendMessage("cmd////" + velocity.doubleValue() + "////" + score);
+					Log.d("TAG", "cmd////" + velocity + "////" + score);
             	}
             }
             
@@ -192,8 +196,9 @@ public class ControlActivity extends Activity implements SensorEventListener,
             		// 10점 감점
             		score -= 10;
 //            		textScore.setText(score + " 점");
-            		Log.d("test", "직진 안했음");
-					mBluetoothService.sendMessage("cmd////"+velocity+"////"+score);
+            		Log.d("TAG", "직진 안했음");
+					mBluetoothService.sendMessage("cmd////" + velocity.doubleValue() + "////" + score);
+					Log.d("TAG", "cmd////" + velocity + "////" + score);
             	}
             }
         }
@@ -277,11 +282,11 @@ public class ControlActivity extends Activity implements SensorEventListener,
 //						textStatus2.post(new Runnable() {
 //			 				public void run() {
 //			 					textStatus2.setText("swipe to turn right");
-								Log.d("test", "swipe to turn right");
+								Log.d("TAG", "swipe to turn right");
 			 					
 								if(40 <=seconds && seconds <=42) {
 									scenarioTask5 = true;
-									Log.d("test", "우회전 깜빡이 함");
+									Log.d("TAG", "우회전 깜빡이 함");
 								}
 //			 				}
 //			 			});
@@ -293,11 +298,11 @@ public class ControlActivity extends Activity implements SensorEventListener,
 //			 				public void run() {
 //			 					textStatus2.setText("swipe to turn left");
 
-								Log.d("test", "swipe to turn left");
+								Log.d("TAG", "swipe to turn left");
 								
 								if(30 <=seconds && seconds <=32) {
 									scenarioTask4 = true;
-									Log.d("test", "좌회전 깜빡이 함");
+									Log.d("TAG", "좌회전 깜빡이 함");
 								}
 //			 				}
 //			 			});
@@ -322,7 +327,7 @@ public class ControlActivity extends Activity implements SensorEventListener,
 				// (1) 엑셀
 				// 눌렀을때
 				
-//				Log.d("test", "Thread.currentThread().getName() = " + Thread.currentThread().getName());
+//				Log.d("TAG", "Thread.currentThread().getName() = " + Thread.currentThread().getName());
 
 				if (event.getAction() == MotionEvent.ACTION_DOWN) {
 					isAccPressed = true;
@@ -330,12 +335,12 @@ public class ControlActivity extends Activity implements SensorEventListener,
 					// 10~12초 사이에 엑셀 눌러야함
 		            if(10 <= seconds && seconds <= 12) {
 						scenarioTask1 = true;
-						Log.d("test", "엑셀 누름");
+						Log.d("TAG", "엑셀 누름");
 		            }
 					
 		            // setNAme이 되긴 됐는데 다른 이벤트리스너에서도 되는지 보쟈..
 //		            Thread.currentThread().setName("My onTouch event listener");
-//		            Log.d("test", "thread name was set");
+//		            Log.d("TAG", "thread name was set");
 					
 					// 시나리오1 검증
 		    		// 요건 캡슐화 한거고.. 이걸 자동으로 해줘야함
@@ -355,8 +360,8 @@ public class ControlActivity extends Activity implements SensorEventListener,
 						public void run() {
 							
 							btnAccElapsedTime = (float) (btnAccElapsedTime + 0.1f);
-//							Log.d("test", "btnAccElapsedTime = " + btnAccElapsedTime);
-//							Log.d("test", "btnAccElapsedTime is bigger than 1 : " + (btnAccElapsedTime>=1));
+//							Log.d("TAG", "btnAccElapsedTime = " + btnAccElapsedTime);
+//							Log.d("TAG", "btnAccElapsedTime is bigger than 1 : " + (btnAccElapsedTime>=1));
 //							textView.post(new Runnable() {
 //								public void run() {
 //									textView.setText(valueFormat.format(btnAccElapsedTime) + " sec.");
@@ -375,9 +380,10 @@ public class ControlActivity extends Activity implements SensorEventListener,
 								// 1초당 0.1씩 증가
 	//							velocity += VELOCITY_INCREASE;
 								velocity = velocity.add(VELOCITY_INCREASE);
-								Log.d("test", "엑셀 속도증가 +0.1");
+								Log.d("TAG", "엑셀 속도증가 +0.1");
 
-								mBluetoothService.sendMessage("cmd////"+velocity+"////"+score);
+								mBluetoothService.sendMessage("cmd////" + velocity.doubleValue() + "////" + score);
+								Log.d("TAG", "cmd////" + velocity + "////" + score);
 								
 	//							velocity += VELOCITY_ACC;
 	//							textVelocity.post(new Runnable() {
@@ -413,9 +419,10 @@ public class ControlActivity extends Activity implements SensorEventListener,
 								if (velocity.compareTo(VELOCITY_DECREASE) >= 0) {
 									// 1초당 0.1씩 감소
 									velocity = velocity.subtract(VELOCITY_INCREASE);
-									Log.d("test", "자연 속도감소 -0.1");
+									Log.d("TAG", "자연 속도감소 -0.1");
 
-									mBluetoothService.sendMessage("cmd////"+velocity+"////"+score);
+									mBluetoothService.sendMessage("cmd////" + velocity.doubleValue() + "////" + score);
+									Log.d("TAG", "cmd////" + velocity + "////" + score);
 								}
 							}
 						}, 1000, 1000);
@@ -453,7 +460,7 @@ public class ControlActivity extends Activity implements SensorEventListener,
 					// 20~22초 사이에 엑셀 눌러야함
 		            if(20 <= seconds && seconds <= 22) {
 						scenarioTask2 = true;
-						Log.d("test", "브레이크 잘 누름");
+						Log.d("TAG", "브레이크 잘 누름");
 		            }
 		            
 					// 속도 감소
@@ -464,12 +471,13 @@ public class ControlActivity extends Activity implements SensorEventListener,
 							// 1초 이상 눌려있었으면
 							if(btnBrakeElapsedTime >= 1) {
 								velocity = velocity.subtract(VELOCITY_BREAK_DECREASE);
-								Log.d("test", "브레이크 속도감소 -0.5");
+								Log.d("TAG", "브레이크 속도감소 -0.5");
 
 								// 속도가 0보다 아래면 0으로 보정
 								if(velocity.compareTo(new BigDecimal("0")) < 0) {
 									velocity = new BigDecimal("0");
 								}
+								mBluetoothService.sendMessage("cmd////" + velocity.doubleValue() + "////" + score);
 							}
 
 //							textVelocity.post(new Runnable() {
@@ -503,8 +511,9 @@ public class ControlActivity extends Activity implements SensorEventListener,
 								if (velocity.compareTo(VELOCITY_DECREASE) >= 0) {
 									// 1초당 0.1씩 감소
 									velocity = velocity.subtract(VELOCITY_INCREASE);
-	//								sendMessage("cmd||||" + velocity + "||||" + score);
-									Log.d("test", "[2]자연 속도감소 -0.1");
+									mBluetoothService.sendMessage("cmd////" + velocity.doubleValue() + "////" + score);
+									Log.d("TAG", "cmd////" + velocity + "////" + score);
+									Log.d("TAG", "[2]자연 속도감소 -0.1");
 								}
 							}
 						}, 1000, 1000);
@@ -562,13 +571,13 @@ public class ControlActivity extends Activity implements SensorEventListener,
 							
 							if(30 <=seconds && seconds <=32) {
 								scenarioTask3 = true;
-								Log.d("test", "좌회전 함");
+								Log.d("TAG", "좌회전 함");
 							}
 							
 							
 							if(50 <=seconds && seconds <=52) {
 								scenarioTask7 = false;
-								Log.d("test", "좌회전하면 안됨");
+								Log.d("TAG", "좌회전하면 안됨");
 							}
 							
 							// 깜빡이 원래대로
@@ -581,13 +590,13 @@ public class ControlActivity extends Activity implements SensorEventListener,
 							
 							if(40 <=seconds && seconds <=42) {
 								scenarioTask5 = true;
-								Log.d("test", "우회전 함");
+								Log.d("TAG", "우회전 함");
 							}
 							
 
 							if(50 <=seconds && seconds <=52) {
 								scenarioTask7 = false;
-								Log.d("test", "우회전하면 안됨");
+								Log.d("TAG", "우회전하면 안됨");
 							}
 							
 							// 깜빡이 원래대로
@@ -601,7 +610,7 @@ public class ControlActivity extends Activity implements SensorEventListener,
 							if(scenarioTask7) {
 								if(50 <=seconds && seconds <=52) {
 									scenarioTask7 = true;
-									Log.d("test", "직진 함");
+									Log.d("TAG", "직진 함");
 								}
 							}
 						}
@@ -690,7 +699,7 @@ public class ControlActivity extends Activity implements SensorEventListener,
 	        	// 5점 감점
 	        	score -= decScore;
 	//    		textScore.setText(score + " 점");
-	        	Log.d("test", "엑셀 안누름");
+	        	Log.d("TAG", "엑셀 안누름");
 	    	}
 	    }
     }
@@ -698,21 +707,21 @@ public class ControlActivity extends Activity implements SensorEventListener,
 
 	// 시나리오1 검증
     public static void validateScenario(int startSecond, int endSecond, boolean task, String eventName, String log) {
-//    	Log.d("test", "validateScenario is called");
-//		Log.d("test", "Thread.currentThread().getName() = " + Thread.currentThread().getName());
-//    	Log.d("test", klass.getClass().toString());
+//    	Log.d("TAG", "validateScenario is called");
+//		Log.d("TAG", "Thread.currentThread().getName() = " + Thread.currentThread().getName());
+//    	Log.d("TAG", klass.getClass().toString());
 
 		// 10~12초 사이에 엑셀 눌러야함
         if(startSecond <= seconds && seconds <= endSecond) {
         	task = true;
-			Log.d("test", log + " inside of validateScenario");
+			Log.d("TAG", log + " inside of validateScenario");
         }
     }
     
     
     // 시나리오1 검증
     public static void validateScenario(int viewId, int eventName) {
-    	Log.d("test", "validateScenario(int viewId, int eventName) is called");
+    	Log.d("TAG", "validateScenario(int viewId, int eventName) is called");
     	// 시나리오 List 불러옴
     	List<Scenario> scenarioList_ = getScenarioTask();
     	
@@ -724,7 +733,7 @@ public class ControlActivity extends Activity implements SensorEventListener,
     	
     	
     	// 일단 호출된 뷰객체명이랑 이벤트명..
-		Log.d("test", "seconds = " + seconds + ", viewId = " + viewId + ", eventName = " + eventName);
+		Log.d("TAG", "seconds = " + seconds + ", viewId = " + viewId + ", eventName = " + eventName);
     }
     
     
