@@ -8,6 +8,8 @@ import android.os.Bundle;
 import android.util.Log;
 import android.util.Pair;
 import android.view.View;
+import android.view.Window;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.SeekBar;
 import android.widget.TextView;
@@ -110,7 +112,6 @@ public class VrVideoActivity extends Activity {
     private long currVideoTime;
     private int mPrevCount;
     private int mCurrCount;
-    private boolean mUpdateFlag = false;
     private double testSpeed = 0;
 
     @Override
@@ -133,13 +134,20 @@ public class VrVideoActivity extends Activity {
         handleIntent(getIntent());
         mBluetoothService = BluetoothService.getInstance();
 
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+
         mSpeedUpTest = (Button) findViewById(R.id.speed_up_test);
         mSpeedUpTest.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (DBG) { Log.d(TAG, "Click"); }
                 testSpeed += 0.1;
+                String string = String.valueOf(testSpeed);
+                if (DBG) { Log.d(TAG, "Up button Click" + " testSpeed = " + string); }
+                if (testSpeed > MAX_SPEED) {
+                    testSpeed = MAX_SPEED;
+                }
                 setSpeed(testSpeed);
+                updateStatusText();
             }
         });
 
@@ -147,12 +155,14 @@ public class VrVideoActivity extends Activity {
         mSpeedDownTest.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (DBG) { Log.d(TAG, "Click"); }
                 testSpeed -= 0.1;
+                String string = String.valueOf(testSpeed);
+                if (DBG) { Log.d(TAG, "Down button Click" + " testSpeed = " + string); }
                 if (testSpeed < 0) {
                     testSpeed = 0;
                 }
                 setSpeed(testSpeed);
+                updateStatusText();
             }
         });
         mPrevCount = 0;
@@ -371,22 +381,24 @@ public class VrVideoActivity extends Activity {
 
     //set speed factor(multiplication of 1000 to make factor as millisecond)
     private void setSpeed(double speed){
-        if(speed != 0) { // Speed값이 있으면
-            if (mSpeed==0) { // 기존 Speed 값이 0이면 처음이라는 의미
-                if (speed > 0) { // 처음부터 음수값이 들어올수도 있으니, 양수 일때만 처리
-                    mSpeed = DEFAULT_SPEED; // 0.5부터 1초에 0.1씩이니깐, 기본이 0.5
-                }
-            } else {
-                mSpeed += speed; // speed가 양수든 음수든 기존 값이랑 일단 합치고,
-                if (mSpeed >= MAX_SPEED) { // Max를 넘었으면 Max로 다시 조정
-                    mSpeed = MAX_SPEED;
-                } else if (mSpeed < DEFAULT_SPEED) { // 기본값보다 작으면 0으로 조정
-                    mSpeed = 0;
-                }
+        if (speed > 0) { // 입력값이 양수
+            if (mSpeed >= 0) { // 기존값이 없거나, 있었다고 하면 Default + (speed - 0.1)
+                mSpeed = (DEFAULT_SPEED + (speed - 0.1));
             }
-        } else { // Speed 값이 0이면 0으로
+            if (mSpeed > MAX_SPEED) { // MAX Speed를 초과하지는 못하도록 설정
+                mSpeed = MAX_SPEED;
+            }
+        } else if (speed < 0) { // 입력값이 음수
+            if (mSpeed > 0) { // 기존에 값이 뭔가라도 있다면, 입력받은 Speed값을 합쳐서 작아지게 함.
+                mSpeed += speed;
+            }
+            if (mSpeed < DEFAULT_SPEED) { // Default Speed 보다 작으면 무조건 0으로 설정
+                mSpeed = 0;
+            }
+        } else {    // 입력값이 0
             mSpeed = 0;
         }
+        if (DBG) {Log.d(TAG, " mSpeed = " + mSpeed);}
     }
 
     public double getSpeedToMilliSecond() {
@@ -484,7 +496,7 @@ public class VrVideoActivity extends Activity {
         public void onNewFrame() {
             prevTime = currTime;
             currTime = mVrVideoView.getCurrentPosition();
-            Log.d(TAG, " Time gap = " + (currTime-prevTime));
+            //Log.d(TAG, " Time gap = " + (currTime-prevTime));
             if (!isPaused) {
                 //videoWidgetView.pauseVideo();
                 long speed = (long)getSpeedToMilliSecond();
@@ -500,7 +512,7 @@ public class VrVideoActivity extends Activity {
                 }
                 seekBar.setProgress((int)videoPosition);
                 mPrevCount = mCurrCount;
-                Log.d(TAG, " Time gap = " + (videoPosition-prevVideoTime));
+                //Log.d(TAG, " Time gap = " + (videoPosition-prevVideoTime));
                 prevVideoTime = videoPosition;
                 //videoWidgetView.playVideo();
                 updateStatusText();
