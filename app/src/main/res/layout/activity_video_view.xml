@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="fill_parent"
+    android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:background="@android:color/white">
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="wrap_content"
         android:id="@+id/main_layout"
         android:padding="10dip"
         android:orientation="vertical" >
@@ -23,26 +23,37 @@
             style="?android:attr/progressBarStyleHorizontal"
             android:layout_height="32dp"
             android:layout_width="fill_parent"/>
-        <TextView
-            android:id="@+id/status_text"
-            android:text="Loading Video..."
-            android:layout_centerInParent="true"
-            android:layout_height="wrap_content"
-            android:layout_width="fill_parent"
-            android:textSize="@dimen/caption_text_size"
-            android:paddingStart="32dp"
-            android:paddingEnd="32dp"/>
 
-        <TextView
-            android:id="@+id/source"
-            style="@style/ContentText"
-            android:textColor="@color/textDark"
-            android:textSize="@dimen/paragragh_text_size"/>
-
-        <Button
-            android:id="@+id/speed_test"
-            android:layout_width="wrap_content"
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Speed Test"/>
+            android:id="@+id/debug_layout"
+            android:padding="10dip"
+            android:orientation="horizontal" >
+            <TextView
+                android:id="@+id/status_text"
+                android:layout_height="match_parent"
+                android:layout_width="0dp"
+                android:layout_weight="4"
+                android:text="Loading Video..."
+                android:layout_centerInParent="true"
+                android:textSize="@dimen/caption_text_size"
+                android:paddingStart="32dp"
+                android:paddingEnd="32dp"/>
+
+            <Button
+                android:id="@+id/speed_up_test"
+                android:layout_height="match_parent"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:text="Speed\nUp"/>
+
+            <Button
+                android:id="@+id/speed_down_test"
+                android:layout_height="match_parent"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:text="Speed\nDown"/>
+        </LinearLayout>
     </LinearLayout>
 </ScrollView>
