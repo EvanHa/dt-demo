@@ -683,6 +683,12 @@ public class ControlActivity extends Activity implements SensorEventListener,
 	public void onPause() {
 		super.onPause();
 
+		if(timer!=null) timer.cancel();
+		if(timer2!=null) timer2.cancel();
+		if(timer3!=null) timer3.cancel();
+		if(timer4!=null) timer4.cancel();
+		if(timer5!=null) timer5.cancel();
+
         timerHandler.removeCallbacks(timerRunnable);
 
 	    mSensorManager.unregisterListener(this);
