@@ -419,6 +419,8 @@ public class ControlActivity extends Activity implements SensorEventListener,
 								}
 							}
 						}, 1000, 1000);
+					}else {
+						if(timer4!=null) timer4.cancel();
 					}
 					
 				}
@@ -461,12 +463,12 @@ public class ControlActivity extends Activity implements SensorEventListener,
 
 							// 1초 이상 눌려있었으면
 							if(btnBrakeElapsedTime >= 1) {
-								if (velocity.compareTo(VELOCITY_BREAK_DECREASE) >= 0) {
-									// 1초당 0.5씩 감소
-									velocity = velocity.subtract(VELOCITY_BREAK_DECREASE);
-									Log.d("test", "브레이크 속도감소 -0.5");
-									
-									mBluetoothService.sendMessage("cmd////"+velocity+"////"+score);
+								velocity = velocity.subtract(VELOCITY_BREAK_DECREASE);
+								Log.d("test", "브레이크 속도감소 -0.5");
+
+								// 속도가 0보다 아래면 0으로 보정
+								if(velocity.compareTo(new BigDecimal("0")) < 0) {
+									velocity = new BigDecimal("0");
 								}
 							}
 
@@ -493,20 +495,22 @@ public class ControlActivity extends Activity implements SensorEventListener,
 					timer5.cancel();
 					timer3.cancel();
 //					if(timer4!=null) timer4.cancel();
-					
-					timer4 = new Timer();
-					timer4.scheduleAtFixedRate(new TimerTask() {
-						public void run() {
-							if (velocity.compareTo(VELOCITY_DECREASE) >= 0) {
-								// 1초당 0.1씩 감소
-								velocity = velocity.subtract(VELOCITY_INCREASE);
-//								sendMessage("cmd||||" + velocity + "||||" + score);
-								Log.d("test", "자연 속도감소 -0.1");
-								
-								mBluetoothService.sendMessage("cmd////"+velocity+"////"+score);
+
+					if(!isAccPressed && !isBreakPressed) {
+						timer4 = new Timer();
+						timer4.scheduleAtFixedRate(new TimerTask() {
+							public void run() {
+								if (velocity.compareTo(VELOCITY_DECREASE) >= 0) {
+									// 1초당 0.1씩 감소
+									velocity = velocity.subtract(VELOCITY_INCREASE);
+	//								sendMessage("cmd||||" + velocity + "||||" + score);
+									Log.d("test", "[2]자연 속도감소 -0.1");
+								}
 							}
-						}
-					}, 1000, 1000);
+						}, 1000, 1000);
+					}else {
+						if(timer4!=null) timer4.cancel();
+					}
 				}
 				return true;
 			}
