@@ -106,12 +106,6 @@ public class VrVideoActivity extends Activity {
     // For Debug
     private Button mSpeedUpTest;
     private Button mSpeedDownTest;
-    private double prevTime;
-    private double currTime;
-    private long prevVideoTime;
-    private long currVideoTime;
-    private int mPrevCount;
-    private int mCurrCount;
     private double testSpeed = 0;
 
     @Override
@@ -165,12 +159,6 @@ public class VrVideoActivity extends Activity {
                 updateStatusText();
             }
         });
-        mPrevCount = 0;
-        mCurrCount = 0;
-        prevVideoTime = 0;
-        currVideoTime = 0;
-        mPrevCount = 0;
-        mPrevCount = 0;
     }
 
     /**
@@ -494,27 +482,14 @@ public class VrVideoActivity extends Activity {
         @Override
         //change onNewFrame for play speed control with speed factor from bluetooth
         public void onNewFrame() {
-            prevTime = currTime;
-            currTime = mVrVideoView.getCurrentPosition();
-            //Log.d(TAG, " Time gap = " + (currTime-prevTime));
             if (!isPaused) {
-                //videoWidgetView.pauseVideo();
                 long speed = (long)getSpeedToMilliSecond();
                 long videoPosition = mVrVideoView.getCurrentPosition();
-                mCurrCount = (int)videoPosition/TIME_THRESHOLD_FRAME_UPDATE;
-                if (((mCurrCount-mPrevCount) > 0)) {
-                    if (speed != 0) {
-                        videoPosition += speed;
-                        //mVrVideoView.pauseVideo();
-                        mVrVideoView.seekTo(videoPosition);
-                        //mVrVideoView.playVideo();
-                    }
+                if (speed != 0) {
+                    videoPosition += speed;
+                    mVrVideoView.seekTo(videoPosition);
                 }
                 seekBar.setProgress((int)videoPosition);
-                mPrevCount = mCurrCount;
-                //Log.d(TAG, " Time gap = " + (videoPosition-prevVideoTime));
-                prevVideoTime = videoPosition;
-                //videoWidgetView.playVideo();
                 updateStatusText();
             }
         }
