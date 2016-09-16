@@ -41,6 +41,10 @@ public class ControlActivity extends Activity implements SensorEventListener,
 	private BluetoothHandler mHandler = null;
 	private BluetoothHandler.ActivityCb mActivityCb = null;
 
+	boolean isFirstAccleated = false;
+
+	boolean doubleBackToExitPressedOnce = false;
+
 	private static List<Scenario> scenarioList;
     
 	ImageView frame;
@@ -96,7 +100,7 @@ public class ControlActivity extends Activity implements SensorEventListener,
 	
 	// retry alert
 	private static boolean exit = false;
-	
+
 	
 
 	// 진행시간 및 시나리오 처리
@@ -423,14 +427,32 @@ public class ControlActivity extends Activity implements SensorEventListener,
 						public void run() {
 							// 1초 이상 눌려있었으면
 							if(btnAccElapsedTime >= 1) {
+								// 처음 액셀 눌렀으면 재생 신호 보내줌
+								if(!isFirstAccleated) {
+									mBluetoothService.sendMessage("play////1");
+									Log.d("TAG", "isFirstAccleated!!!!       play////1");
+									isFirstAccleated = true;
+								}
+
+
+
 								// 1초당 0.1씩 증가
 	//							velocity += VELOCITY_INCREASE;
 								velocity = velocity.add(VELOCITY_INCREASE);
 								Log.d("TAG", "엑셀 속도증가 +0.1");
 
+								// 최대 속도는 1.5임
+								if(velocity.compareTo(new BigDecimal("1.5")) > 0) {
+									velocity = new BigDecimal("1.5");
+									Log.d("TAG", "최대속도 제한 1.5");
+								}
+
+
 								mBluetoothService.sendMessage("cmd////" + velocity.doubleValue() + "////" + score);
 								Log.d("TAG", "cmd////" + velocity + "////" + score);
-								
+
+
+
 	//							velocity += VELOCITY_ACC;
 	//							textVelocity.post(new Runnable() {
 	//								public void run() {
@@ -738,15 +760,37 @@ public class ControlActivity extends Activity implements SensorEventListener,
 		if(timer4!=null) timer4.cancel();
 		if(timer5!=null) timer5.cancel();
 
-        timerHandler.removeCallbacks(timerRunnable);
+		timerHandler.removeCallbacks(timerRunnable);
 
-	    mSensorManager.unregisterListener(this);
+		mSensorManager.unregisterListener(this);
 	}
-	
-	
-	
 
-    // 시나리오1 수행 여부에 따라서 점수 감점
+	@Override
+	public void onBackPressed() {
+		if (doubleBackToExitPressedOnce) {
+			super.onBackPressed();
+			return;
+		}
+
+		this.doubleBackToExitPressedOnce = true;
+		Toast.makeText(this, "Please click BACK again to exit", Toast.LENGTH_SHORT).show();
+
+		new Handler().postDelayed(new Runnable() {
+
+			@Override
+			public void run() {
+				doubleBackToExitPressedOnce=false;
+				Log.d("TAG","백 키 두번 누름??");
+				mBluetoothService.sendMessage("stop////1");
+				Log.d("TAG", "stop////1");
+			}
+		}, 2000);
+	}
+
+
+
+
+	// 시나리오1 수행 여부에 따라서 점수 감점
     public static void applyScenarioResult(int startSecond, int endSecond, boolean flag, boolean task, int decScore) {
       
 	      if(startSecond < seconds && seconds <= endSecond) {
