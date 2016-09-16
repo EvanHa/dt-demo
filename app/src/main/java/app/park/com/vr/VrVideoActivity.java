@@ -21,7 +21,6 @@ import com.google.vr.sdk.widgets.video.VrVideoView;
 import com.google.vr.sdk.widgets.video.VrVideoView.Options;
 
 import java.io.IOException;
-import java.math.BigDecimal;
 
 import app.park.com.R;
 import app.park.com.bluetooth.BluetoothHandler;
@@ -232,7 +231,9 @@ public class VrVideoActivity extends Activity {
                         break;
                     case Constants.MESSAGE_READ:
                         String[] arr = msg.split("////");
-                        Log.i("TAG", "******* msg : " + msg);
+                        Log.i("TAG", "*******" + msg);
+                        Log.i("TAG", "*******" + arr.length);
+                        Log.i("TAG", "*******" + arr[0]);
 
                         // play||||1,2,3 -> 1,2,3번 동영상 재생
                         // stop||||1,2,3 -> 현재 동영상 멈춤
@@ -247,11 +248,9 @@ public class VrVideoActivity extends Activity {
                             // 해당 속도, 점수 업뎃 쳐줌
                             int score = Integer.parseInt(arr[2]);
                             setScore(score);
-                            Log.i("TAG", "******* score : " + score);
 
-                            Double speed = new Double(arr[1]);
+                            double speed = Double.parseDouble((arr[1]));
                             setSpeed(speed);
-                            Log.i("TAG", "******* speed : " + speed);
 
                             if(arr[0].equals("play")){
                                 //onResume();
