@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Environment;
 import android.util.Log;
 import android.util.Pair;
 import android.view.View;
@@ -18,6 +19,7 @@ import com.google.vr.sdk.widgets.video.VrVideoEventListener;
 import com.google.vr.sdk.widgets.video.VrVideoView;
 import com.google.vr.sdk.widgets.video.VrVideoView.Options;
 
+import java.io.File;
 import java.io.IOException;
 
 import app.park.com.R;
@@ -544,7 +546,9 @@ public class VrVideoActivity extends Activity {
                     options.inputFormat = Options.FORMAT_DEFAULT;
                     options.inputType = Options.TYPE_MONO;
                     videoOptions = options;
-                    videoUri = Uri.parse("car.mp4");
+                    videoUri = Uri.parse(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MOVIES).getAbsolutePath() + File.separator + "car.mp4");
+
+
                     result = true;
                 } else {
                     videoOptions = fileInformation[0].second;
@@ -566,9 +570,12 @@ public class VrVideoActivity extends Activity {
                 if (aBoolean) {
                     mVrVideoView.setDisplayMode(VrVideoView.DisplayMode.FULLSCREEN_MONO);
                     mVrVideoView.setStereoModeButtonEnabled(false);
-                    mVrVideoView.loadVideoFromAsset("car.mp4", videoOptions);
+                    //mVrVideoView.loadVideoFromAsset(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MOVIES).getAbsolutePath() + File.separator + "car.mp4", videoOptions);
+                    mVrVideoView.loadVideo(videoUri, videoOptions);
+                    Log.d(TAG, "### loadVideoFromAsset()");
                 } else {
                     mVrVideoView.loadVideo(videoUri, videoOptions);
+                    Log.d(TAG, "### loadVideo()");
                 }
 /*
                 WindowManager.LayoutParams myParams = new WindowManager.LayoutParams(
