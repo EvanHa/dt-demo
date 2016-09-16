@@ -220,6 +220,7 @@ public class ControlActivity extends Activity implements SensorEventListener,
     	seconds_ = 0;
     	score = 100;
     	exit = false;
+		velocity = new BigDecimal(0);
     	
 //		textCTime.setText("00:00");
 //		textView.setText("0 sec.");
@@ -780,8 +781,9 @@ public class ControlActivity extends Activity implements SensorEventListener,
 			@Override
 			public void run() {
 				doubleBackToExitPressedOnce=false;
-				Log.d("TAG","백 키 두번 누름??");
+				Log.d("TAG", "백 키 두번 누름??");
 				mBluetoothService.sendMessage("stop////1");
+				init();
 				Log.d("TAG", "stop////1");
 			}
 		}, 2000);
