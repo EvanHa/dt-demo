@@ -1,15 +1,19 @@
 package app.park.com.vr;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
+import android.graphics.PixelFormat;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
 import android.util.Pair;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.Button;
+import android.widget.LinearLayout;
 import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -106,6 +110,10 @@ public class VrVideoActivity extends Activity {
     private Button mSpeedDownTest;
     private double testSpeed = 0;
 
+    /*
+    private LinearLayout myView;
+    private TextView mText;
+*/
     @Override
     public void onCreate(Bundle savedInstanceState) {
 
@@ -119,14 +127,19 @@ public class VrVideoActivity extends Activity {
         // Bind input and output objects for the view.
         mVrVideoView = (VrVideoView) findViewById(R.id.video_view);
         mVrVideoView.setEventListener(new ActivityEventListener());
+/*
+        LayoutInflater inflater = (LayoutInflater)getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+        myView = (LinearLayout) inflater.inflate(R.layout.activity_game_score, null);
+        mText = (TextView) findViewById(R.id.test_txt);
+*/
 
         loadVideoStatus = LOAD_VIDEO_STATUS_UNKNOWN;
 
+        mBluetoothService = BluetoothService.getInstance();
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON); // 화면 자동 꺼짐 방지
+
         // Initial launch of the app or an Activity recreation due to rotation.
         handleIntent(getIntent());
-        mBluetoothService = BluetoothService.getInstance();
-
-        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
         mSpeedUpTest = (Button) findViewById(R.id.speed_up_test);
         mSpeedUpTest.setOnClickListener(new View.OnClickListener() {
@@ -349,9 +362,11 @@ public class VrVideoActivity extends Activity {
         if (isPaused) {
             Log.i("TAG", "********Status-playvideo********");
             mVrVideoView.playVideo();
+//            mText.setText("Play");
         } else {
             Log.i("TAG", "********Status-pausevideo********");
             mVrVideoView.pauseVideo();
+//            mText.setText("Pause");
         }
         isPaused = !isPaused;
         updateStatusText();
@@ -530,13 +545,13 @@ public class VrVideoActivity extends Activity {
 
         @Override
         protected void onPreExecute() {
+            Log.d(TAG,"onPreExecute!!!");
             super.onPreExecute();
-
         }
 
         @Override
         protected Boolean doInBackground(Pair<Uri, Options>... fileInformation) {
-
+            Log.d(TAG,"doInBackground!!!");
             Boolean result = false;
 
             if (fileInformation == null || fileInformation.length < 1
@@ -557,12 +572,14 @@ public class VrVideoActivity extends Activity {
 
         @Override
         protected void onProgressUpdate(Void... values) {
+            Log.d(TAG,"onProgressUpdate!!!");
             super.onProgressUpdate(values);
         }
 
         @Override
         protected void onPostExecute(Boolean aBoolean) {
             try {
+                Log.d(TAG,"onPostExecute!!!");
                 if (aBoolean) {
                     mVrVideoView.setDisplayMode(VrVideoView.DisplayMode.FULLSCREEN_MONO);
                     mVrVideoView.setStereoModeButtonEnabled(false);
@@ -570,6 +587,16 @@ public class VrVideoActivity extends Activity {
                 } else {
                     mVrVideoView.loadVideo(videoUri, videoOptions);
                 }
+/*
+                WindowManager.LayoutParams myParams = new WindowManager.LayoutParams(
+                        WindowManager.LayoutParams.MATCH_PARENT,
+                        WindowManager.LayoutParams.WRAP_CONTENT,
+                        WindowManager.LayoutParams.TYPE_SYSTEM_OVERLAY,
+                        WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
+                        PixelFormat.TRANSLUCENT);
+                WindowManager myWindow = (WindowManager) getSystemService(WINDOW_SERVICE);
+                myWindow.addView(myView, myParams);
+                */
             } catch (IOException e) {
                 e.printStackTrace();
                 // An error here is normally due to being unable to locate the file.
