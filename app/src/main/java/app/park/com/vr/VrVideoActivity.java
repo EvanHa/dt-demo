@@ -8,14 +8,12 @@ import android.os.Bundle;
 import android.util.Log;
 import android.util.Pair;
 import android.view.View;
-import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.google.vr.sdk.widgets.common.VrWidgetView;
 import com.google.vr.sdk.widgets.video.VrVideoEventListener;
 import com.google.vr.sdk.widgets.video.VrVideoView;
 import com.google.vr.sdk.widgets.video.VrVideoView.Options;
@@ -77,7 +75,7 @@ public class VrVideoActivity extends Activity {
     public static final int LOAD_VIDEO_STATUS_ERROR = 2;
     public static final int TIME_THRESHOLD_SECOND = 1000;
     public static final int TIME_THRESHOLD_FRAME_UPDATE = 500;
-    public static final double DEFAULT_SPEED = 0.5;
+    public static final double DEFAULT_SPEED = 0.1;
     public static final double MAX_SPEED = 1.5;
 
     private int loadVideoStatus = LOAD_VIDEO_STATUS_UNKNOWN;
@@ -136,7 +134,9 @@ public class VrVideoActivity extends Activity {
             public void onClick(View view) {
                 testSpeed += 0.1;
                 String string = String.valueOf(testSpeed);
-                if (DBG) { Log.d(TAG, "Up button Click" + " testSpeed = " + string); }
+                if (DBG) {
+                    Log.d(TAG, "Up button Click" + " testSpeed = " + string);
+                }
                 if (testSpeed > MAX_SPEED) {
                     testSpeed = MAX_SPEED;
                 }
@@ -151,7 +151,9 @@ public class VrVideoActivity extends Activity {
             public void onClick(View view) {
                 testSpeed -= 0.1;
                 String string = String.valueOf(testSpeed);
-                if (DBG) { Log.d(TAG, "Down button Click" + " testSpeed = " + string); }
+                if (DBG) {
+                    Log.d(TAG, "Down button Click" + " testSpeed = " + string);
+                }
                 if (testSpeed < 0) {
                     testSpeed = 0;
                 }
@@ -210,7 +212,7 @@ public class VrVideoActivity extends Activity {
     @Override
     public void onStart() {
         super.onStart();
-        Log.i("TAG","********Status-Start********");
+        Log.i("TAG", "********Status-Start********");
 
         mHandler = new BluetoothHandler();
         mActivityCb = new BluetoothHandler.ActivityCb() {
@@ -235,29 +237,8 @@ public class VrVideoActivity extends Activity {
                         Log.i("TAG", "*******" + arr.length);
                         Log.i("TAG", "*******" + arr[0]);
 
-                        // play||||1,2,3 -> 1,2,3번 동영상 재생
-                        // stop||||1,2,3 -> 현재 동영상 멈춤
-                        if(arr.length == 2) {
-                            if(arr[0].equals("play")){
-                                //play
-                            }else if(arr[0].equals("stop")){
-                                //stop
-                            }
-                            // cmd|||||40||||90 -> 속도 40, 점수 90
-                        }else if(arr.length == 3){
-                            // 해당 속도, 점수 업뎃 쳐줌
-                            int score = Integer.parseInt(arr[2]);
-                            setScore(score);
-
-                            double speed = Double.parseDouble((arr[1]));
-                            setSpeed(speed);
-
-                            if(arr[0].equals("play")){
-                                //onResume();
-                            }else if(arr[0].equals("stop")){
-                                //onPause();
-                            }
-                        }
+                        //명령어 실행 from bluetooth
+                        executeCommand(arr);
                         break;
                     case Constants.MESSAGE_WRITE:
 
@@ -273,6 +254,29 @@ public class VrVideoActivity extends Activity {
         };
         mHandler.setActivityCb(mActivityCb);
         mBluetoothService.setActivityHandler(mHandler);
+    }
+
+    private void executeCommand(String[] arr) {
+        // play||||1,2,3 -> 1,2,3번 동영상 재생
+        // stop||||1,2,3 -> 현재 동영상 멈춤
+        // cmd|||||40||||90 -> 속도 40, 점수 90
+        switch (arr[0]) {
+            case "play":
+                break;
+
+            case "stop":
+                break;
+
+            case "cmd":
+
+                int score = Integer.parseInt(arr[2]);
+                setScore(score);
+
+                double speed = Double.parseDouble((arr[1]));
+                setSpeed(speed);
+
+                break;
+        }
     }
 
     @Override
@@ -301,7 +305,9 @@ public class VrVideoActivity extends Activity {
     @Override
     protected void onResume() {
         super.onResume();
-        if (DBG) { Log.i("TAG","********Status-Resume********"); }
+        if (DBG) {
+            Log.i("TAG", "********Status-Resume********");
+        }
         if (mVrVideoView != null) {
             mVrVideoView.resumeRendering(); // Resume the 3D rendering.
         }
@@ -311,7 +317,9 @@ public class VrVideoActivity extends Activity {
     @Override
     protected void onPause() {
         super.onPause();
-        if (DBG) { Log.i("TAG","********Status-Pause********"); }
+        if (DBG) {
+            Log.i("TAG", "********Status-Pause********");
+        }
         // Prevent the view from rendering continuously when in the background.
         if (mVrVideoView != null) {
             mVrVideoView.pauseRendering();
@@ -328,7 +336,9 @@ public class VrVideoActivity extends Activity {
 
     @Override
     protected void onDestroy() {
-        if (DBG) { Log.i("TAG","********Status-Destroy********"); }
+        if (DBG) {
+            Log.i("TAG", "********Status-Destroy********");
+        }
         if (mVrVideoView != null) {
             mVrVideoView.shutdown(); // Destroy the widget and free memory.
         }
@@ -337,10 +347,10 @@ public class VrVideoActivity extends Activity {
 
     private void togglePause() {
         if (isPaused) {
-            Log.i("TAG","********Status-playvideo********");
+            Log.i("TAG", "********Status-playvideo********");
             mVrVideoView.playVideo();
         } else {
-            Log.i("TAG","********Status-pausevideo********");
+            Log.i("TAG", "********Status-pausevideo********");
             mVrVideoView.pauseVideo();
         }
         isPaused = !isPaused;
@@ -359,7 +369,7 @@ public class VrVideoActivity extends Activity {
         statusText.setText(status.toString());
     }
 
-    protected void handleCommand(String[] arr){
+    protected void handleCommand(String[] arr) {
 
     }
 
@@ -368,56 +378,62 @@ public class VrVideoActivity extends Activity {
     }
 
     //set speed factor(multiplication of 1000 to make factor as millisecond)
-    private void setSpeed(double speed){
-        if (speed > 0) { // 입력값이 양수
-            if (mSpeed >= 0) { // 기존값이 없거나, 있었다고 하면 Default + (speed - 0.1)
-                mSpeed = (DEFAULT_SPEED + (speed - 0.1));
-            }
-            if (mSpeed > MAX_SPEED) { // MAX Speed를 초과하지는 못하도록 설정
-                mSpeed = MAX_SPEED;
-            }
-        } else if (speed < 0) { // 입력값이 음수
-            if (mSpeed > 0) { // 기존에 값이 뭔가라도 있다면, 입력받은 Speed값을 합쳐서 작아지게 함.
-                mSpeed += speed;
-            }
-            if (mSpeed < DEFAULT_SPEED) { // Default Speed 보다 작으면 무조건 0으로 설정
-                mSpeed = 0;
-            }
-        } else {    // 입력값이 0
+    private void setSpeed(double speed) {
+//        if (speed > 0) { // 입력값이 양수
+        if (mSpeed >= 0) { // 기존값이 없거나, 있었다고 하면 Default + (speed - 0.1)
+//                mSpeed = (DEFAULT_SPEED + (speed - 0.1));
+            mSpeed = speed;
+        }
+        if (mSpeed > MAX_SPEED) { // MAX Speed를 초과하지는 못하도록 설정
+            mSpeed = MAX_SPEED;
+        }
+        if (mSpeed < DEFAULT_SPEED) { // Default Speed 보다 작으면 무조건 0으로 설정
             mSpeed = 0;
         }
-        if (DBG) {Log.d(TAG, " mSpeed = " + mSpeed);}
+//        } else if (speed < 0) { // 입력값이 음수
+//            if (mSpeed > 0) { // 기존에 값이 뭔가라도 있다면, 입력받은 Speed값을 합쳐서 작아지게 함.
+//                mSpeed += speed;
+//            }
+//            if (mSpeed < DEFAULT_SPEED) { // Default Speed 보다 작으면 무조건 0으로 설정
+//                mSpeed = 0;
+//            }
+//        } else {    // 입력값이 0
+//            mSpeed = 0;
+//        }
+        if (DBG) {
+            Log.d(TAG, " mSpeed = " + mSpeed);
+        }
     }
 
     public double getSpeedToMilliSecond() {
         return (mSpeed * TIME_THRESHOLD_SECOND);
     }
 
-    public double getSpeedToSecond(){
+    public double getSpeedToSecond() {
         return mSpeed;
     }
 
     //set score
-    private void setScore(int i){
+    private void setScore(int i) {
         score = i;
     }
 
     //get current score
-    public int getScore(){
+    public int getScore() {
         return score;
     }
 
     //set turn factor
-    private void setTurn(int i){
+    private void setTurn(int i) {
         turn = i;
     }
 
     //get current turn factor
-    public int getTurn(){
+    public int getTurn() {
         return turn;
     }
 
-    public void reset(){
+    public void reset() {
         togglePause();
         mVrVideoView.seekTo(0);
         updateStatusText();
@@ -483,13 +499,13 @@ public class VrVideoActivity extends Activity {
         //change onNewFrame for play speed control with speed factor from bluetooth
         public void onNewFrame() {
             if (!isPaused) {
-                long speed = (long)getSpeedToMilliSecond();
+                long speed = (long) getSpeedToMilliSecond();
                 long videoPosition = mVrVideoView.getCurrentPosition();
                 if (speed != 0) {
                     videoPosition += speed;
                     mVrVideoView.seekTo(videoPosition);
                 }
-                seekBar.setProgress((int)videoPosition);
+                seekBar.setProgress((int) videoPosition);
                 updateStatusText();
             }
         }
@@ -523,19 +539,19 @@ public class VrVideoActivity extends Activity {
 
             Boolean result = false;
 
-                if (fileInformation == null || fileInformation.length < 1
-                        || fileInformation[0] == null || fileInformation[0].first == null) {
-                    // No intent was specified, so we default to playing the local stereo-over-under video.
-                    Options options = new Options();
-                    options.inputFormat = Options.FORMAT_DEFAULT;
-                    options.inputType = Options.TYPE_MONO;
-                    videoOptions = options;
-                    videoUri = Uri.parse("car.mp4");
-                    result = true;
-                } else {
-                    videoOptions = fileInformation[0].second;
-                    videoUri = fileInformation[0].first;
-                }
+            if (fileInformation == null || fileInformation.length < 1
+                    || fileInformation[0] == null || fileInformation[0].first == null) {
+                // No intent was specified, so we default to playing the local stereo-over-under video.
+                Options options = new Options();
+                options.inputFormat = Options.FORMAT_DEFAULT;
+                options.inputType = Options.TYPE_MONO;
+                videoOptions = options;
+                videoUri = Uri.parse("car.mp4");
+                result = true;
+            } else {
+                videoOptions = fileInformation[0].second;
+                videoUri = fileInformation[0].first;
+            }
             return result;
         }
 
