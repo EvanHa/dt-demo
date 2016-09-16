@@ -8,7 +8,9 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 import app.park.com.R;
+import app.park.com.bluetooth.BluetoothHandler;
 import app.park.com.bluetooth.BluetoothService;
+import app.park.com.bluetooth.Constants;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -27,6 +29,7 @@ import android.view.View;
 import android.view.View.OnTouchListener;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.Toast;
 
 public class ControlActivity extends Activity implements SensorEventListener,
 		GestureDetector.OnGestureListener {
@@ -35,6 +38,9 @@ public class ControlActivity extends Activity implements SensorEventListener,
 	Sensor magnetometer;
 
 	private BluetoothService mBluetoothService = null;
+	private BluetoothHandler mHandler = null;
+	private BluetoothHandler.ActivityCb mActivityCb = null;
+
 	private static List<Scenario> scenarioList;
     
 	ImageView frame;
@@ -218,8 +224,48 @@ public class ControlActivity extends Activity implements SensorEventListener,
 //		textStatus1.setText("go straight");
 //		textStatus1.setText("");
     }
-    
-    
+
+	@Override
+	public void onStart() {
+		super.onStart();
+
+
+		mHandler = new BluetoothHandler();
+		mActivityCb = new BluetoothHandler.ActivityCb() {
+			@Override
+			public void sendCbMessage(int msgType, String msg) {
+
+				switch (msgType) {
+					case Constants.MESSAGE_STATE_CHANGE:
+						switch (msg) {
+							case Constants.BLUETOOTH_CONNECTED:
+								break;
+							case Constants.BLUETOOTH_CONNECTING:
+								break;
+							case Constants.BLUETOOTH_NONE:
+								Toast.makeText(getApplicationContext(), "BT DISCONNECT!!!", Toast.LENGTH_SHORT).show();
+								init();
+								break;
+						}
+						break;
+					case Constants.MESSAGE_READ:
+						break;
+					case Constants.MESSAGE_WRITE:
+
+						break;
+					case Constants.MESSAGE_DEVICE_NAME:
+						break;
+					case Constants.MESSAGE_TOAST:
+						break;
+					default:
+						break;
+				}
+			}
+		};
+		mHandler.setActivityCb(mActivityCb);
+		mBluetoothService.setActivityHandler(mHandler);
+
+	}
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -401,7 +447,9 @@ public class ControlActivity extends Activity implements SensorEventListener,
 				} else if (event.getAction() == MotionEvent.ACTION_UP) {
 					isAccPressed = false;
 					btnAccElapsedTime = 0;
-					
+					Log.d("test","");
+
+
 //					textView.post(new Runnable() {
 //						public void run() {
 //							textView.setText("0 sec.");
@@ -667,6 +715,7 @@ public class ControlActivity extends Activity implements SensorEventListener,
 	public boolean onSingleTapUp(MotionEvent event) {
 		return true;
 	}
+
 
 	
 	@Override	
