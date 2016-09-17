@@ -93,6 +93,9 @@ public class VrVideoActivity extends Activity {
     private int score;           //game score
     private int turn;            //turn direction: 1 right, 2 left
 
+    //selection of video
+    public static int SELECTED_VIDEO = 1;
+
     /**
      * By default, the video will start playing as soon as it is loaded. This can be changed by using
      * {@link VrVideoView#pauseVideo()} after loading the video.
@@ -270,13 +273,17 @@ public class VrVideoActivity extends Activity {
         // cmd|||||40||||90 -> 속도 40, 점수 90
         switch (arr[0]){
             case "play":
+                int video = Integer.parseInt(arr[1]);
+                setVideo(video);
+                playVideo();
                 break;
 
             case "stop":
+                stopVideo();
                 break;
 
             case "cmd":
-
+                if(DBG){Log.i(TAG, "check - executeCommand");}
                 int score = Integer.parseInt(arr[2]);
                 setScore(score);
 
@@ -285,6 +292,38 @@ public class VrVideoActivity extends Activity {
 
                 break;
         }
+    }
+
+    protected void setVideo(int video){
+        SELECTED_VIDEO = video;
+    }
+
+    protected String getVideo(){
+        String videoName = null;
+        switch (SELECTED_VIDEO){
+            case 1:
+                videoName = "car.mp4";
+                break;
+
+            case 2:
+                videoName = "car.mp4";
+                break;
+
+            case 3:
+                videoName = "car.mp4";
+                break;
+
+        }
+
+        return videoName;
+    }
+
+    protected void stopVideo(){
+        mVrVideoView.pauseVideo();
+    }
+
+    protected void playVideo(){
+        mVrVideoView.playVideo();
     }
 
     @Override
@@ -349,11 +388,11 @@ public class VrVideoActivity extends Activity {
 
     private void togglePause() {
         if (isPaused) {
-            Log.i("TAG","********Status-playvideo********");
+           if(DBG){Log.i("TAG","********Status-playvideo********");}
             mVrVideoView.playVideo();
 //            mText.setText("Play");
         } else {
-            Log.i("TAG","********Status-pausevideo********");
+            if(DBG){Log.i("TAG","********Status-pausevideo********");}
             mVrVideoView.pauseVideo();
 //            mText.setText("Pause");
         }
@@ -546,6 +585,12 @@ public class VrVideoActivity extends Activity {
                     options.inputFormat = Options.FORMAT_DEFAULT;
                     options.inputType = Options.TYPE_MONO;
                     videoOptions = options;
+//                    //bluetooth에서 select한 video를 가져온다
+//                    if(DBG){ Log.i(TAG, "check - uri setting");}
+//                    String videoName = getVideo();
+//                    videoUri = Uri.parse(videoName);
+
+                    //test 용 uri
                     videoUri = Uri.parse(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MOVIES).getAbsolutePath() + File.separator + "car.mp4");
 
 
@@ -570,6 +615,12 @@ public class VrVideoActivity extends Activity {
                 if (aBoolean) {
                     mVrVideoView.setDisplayMode(VrVideoView.DisplayMode.FULLSCREEN_MONO);
                     mVrVideoView.setStereoModeButtonEnabled(false);
+
+                    //bluetooth에서 select한 video를 가져온다
+//                    String videoName = getVideo();
+//                    if(DBG){Log.i(TAG, "check - onPostexecute");}
+//                    mVrVideoView.loadVideoFromAsset(videoName, videoOptions);
+
                     //mVrVideoView.loadVideoFromAsset(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MOVIES).getAbsolutePath() + File.separator + "car.mp4", videoOptions);
                     mVrVideoView.loadVideo(videoUri, videoOptions);
                     Log.d(TAG, "### loadVideoFromAsset()");
