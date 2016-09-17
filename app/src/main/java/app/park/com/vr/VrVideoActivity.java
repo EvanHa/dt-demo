@@ -5,27 +5,29 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.Environment;
 import android.util.Log;
 import android.util.Pair;
+import android.view.Gravity;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.Button;
+import android.widget.PopupWindow;
 import android.widget.SeekBar;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.vr.sdk.widgets.video.VrVideoEventListener;
 import com.google.vr.sdk.widgets.video.VrVideoView;
 import com.google.vr.sdk.widgets.video.VrVideoView.Options;
 
-import java.io.File;
 import java.io.IOException;
 
 import app.park.com.R;
 import app.park.com.bluetooth.BluetoothHandler;
 import app.park.com.bluetooth.BluetoothService;
 import app.park.com.bluetooth.Constants;
+
+import static app.park.com.R.layout.popup;
 
 /**
  * A test activity that renders a 360 video using {@link VrVideoView}.
@@ -85,16 +87,22 @@ public class VrVideoActivity extends Activity {
     private Options videoOptions = new Options();  // Configuration information for the video.
     private VideoLoaderTask backgroundVideoLoaderTask;
     private VrVideoView mVrVideoView;  // The video view and its custom UI elements.
-    private SeekBar seekBar; //Seeking UI & progress indicator. The seekBar's progress value represents milliseconds in the video.
-    private TextView statusText;
+//    private SeekBar seekBar; //Seeking UI & progress indicator. The seekBar's progress value represents milliseconds in the video.
+//    private TextView statusText;
 
     //create speed factor to control speed (get it through bluetooth panel) by sw
     private double mSpeed;
     private int score;           //game score
     private int turn;            //turn direction: 1 right, 2 left
 
+    //back button control
+    boolean doubleBackToExitPressedOnce = false;
+
     //selection of video
     public static int SELECTED_VIDEO = 1;
+
+    //play status 0 = STOP, 1 = PLAY
+    public static int STATUS_PLAY = 0;
 
     /**
      * By default, the video will start playing as soon as it is loaded. This can be changed by using
@@ -121,9 +129,9 @@ public class VrVideoActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_video_view);
 
-        seekBar = (SeekBar) findViewById(R.id.seek_bar);
-        seekBar.setOnSeekBarChangeListener(new SeekBarListener());
-        statusText = (TextView) findViewById(R.id.status_text);
+//        seekBar = (SeekBar) findViewById(R.id.seek_bar);
+//        seekBar.setOnSeekBarChangeListener(new SeekBarListener());
+//        statusText = (TextView) findViewById(R.id.status_text);
 
         // Bind input and output objects for the view.
         mVrVideoView = (VrVideoView) findViewById(R.id.video_view);
@@ -142,35 +150,41 @@ public class VrVideoActivity extends Activity {
         // Initial launch of the app or an Activity recreation due to rotation.
         handleIntent(getIntent());
 
-        mSpeedUpTest = (Button) findViewById(R.id.speed_up_test);
-        mSpeedUpTest.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                testSpeed += 0.1;
-                String string = String.valueOf(testSpeed);
-                if (DBG) { Log.d(TAG, "Up button Click" + " testSpeed = " + string); }
-                if (testSpeed > MAX_SPEED) {
-                    testSpeed = MAX_SPEED;
-                }
-                setSpeed(testSpeed);
-                updateStatusText();
-            }
-        });
 
-        mSpeedDownTest = (Button) findViewById(R.id.speed_down_test);
-        mSpeedDownTest.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                testSpeed -= 0.1;
-                String string = String.valueOf(testSpeed);
-                if (DBG) { Log.d(TAG, "Down button Click" + " testSpeed = " + string); }
-                if (testSpeed < 0) {
-                    testSpeed = 0;
-                }
-                setSpeed(testSpeed);
-                updateStatusText();
-            }
-        });
+        //for speed test
+//        mSpeedUpTest = (Button) findViewById(R.id.speed_up_test);
+//        mSpeedUpTest.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View view) {
+//                testSpeed += 0.1;
+//                String string = String.valueOf(testSpeed);
+//                if (DBG) {
+//                    Log.d(TAG, "Up button Click" + " testSpeed = " + string);
+//                }
+//                if (testSpeed > MAX_SPEED) {
+//                    testSpeed = MAX_SPEED;
+//                }
+//                setSpeed(testSpeed);
+//                updateStatusText();
+//            }
+//        });
+
+//        mSpeedDownTest = (Button) findViewById(R.id.speed_down_test);
+//        mSpeedDownTest.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View view) {
+//                testSpeed -= 0.1;
+//                String string = String.valueOf(testSpeed);
+//                if (DBG) {
+//                    Log.d(TAG, "Down button Click" + " testSpeed = " + string);
+//                }
+//                if (testSpeed < 0) {
+//                    testSpeed = 0;
+//                }
+//                setSpeed(testSpeed);
+//                updateStatusText();
+//            }
+//        });
     }
 
     /**
@@ -215,14 +229,16 @@ public class VrVideoActivity extends Activity {
             // Cancel any task from a previous intent sent to this activity.
             backgroundVideoLoaderTask.cancel(true);
         }
-        backgroundVideoLoaderTask = new VideoLoaderTask();
-        backgroundVideoLoaderTask.execute(Pair.create(fileUri, videoOptions));
+        if (STATUS_PLAY == 1) {
+            backgroundVideoLoaderTask = new VideoLoaderTask();
+            backgroundVideoLoaderTask.execute(Pair.create(fileUri, videoOptions));
+        }
     }
 
     @Override
     public void onStart() {
         super.onStart();
-        Log.i("TAG","********Status-Start********");
+        Log.i("TAG", "********Status-Start********");
 
         mHandler = new BluetoothHandler();
         mActivityCb = new BluetoothHandler.ActivityCb() {
@@ -267,14 +283,18 @@ public class VrVideoActivity extends Activity {
         mBluetoothService.setActivityHandler(mHandler);
     }
 
-    private void executeCommand (String[] arr){
+    private void executeCommand(String[] arr) {
         // play||||1,2,3 -> 1,2,3번 동영상 재생
         // stop||||1,2,3 -> 현재 동영상 멈춤
         // cmd|||||40||||90 -> 속도 40, 점수 90
-        switch (arr[0]){
+        switch (arr[0]) {
             case "play":
                 int video = Integer.parseInt(arr[1]);
-                setVideo(video);
+                if (video != 0) {
+                    setVideo(video);
+                    backgroundVideoLoaderTask = new VideoLoaderTask();
+                    backgroundVideoLoaderTask.execute(Pair.create(fileUri, videoOptions));
+                }
                 playVideo();
                 break;
 
@@ -283,24 +303,30 @@ public class VrVideoActivity extends Activity {
                 break;
 
             case "cmd":
-                if(DBG){Log.i(TAG, "check - executeCommand");}
-                int score = Integer.parseInt(arr[2]);
-                setScore(score);
-
-                double speed = Double.parseDouble((arr[1]));
-                setSpeed(speed);
+                if (DBG) {
+                    Log.i(TAG, "check - executeCommand");
+                }
+                if (arr[2] != null) {
+                    int score = Integer.parseInt(arr[2]);
+                    setScore(score);
+//                Toast.makeText(getApplicationContext(), "Score =" + arr[2], Toast.LENGTH_SHORT).show();
+                }
+                if (arr[1] != null) {
+                    double speed = Double.parseDouble((arr[1]));
+                    setSpeed(speed);
+                }
 
                 break;
         }
     }
 
-    protected void setVideo(int video){
+    protected void setVideo(int video) {
         SELECTED_VIDEO = video;
     }
 
-    protected String getVideo(){
+    protected String getVideo() {
         String videoName = null;
-        switch (SELECTED_VIDEO){
+        switch (SELECTED_VIDEO) {
             case 1:
                 videoName = "car.mp4";
                 break;
@@ -318,110 +344,16 @@ public class VrVideoActivity extends Activity {
         return videoName;
     }
 
-    protected void stopVideo(){
+    protected void stopVideo() {
         mVrVideoView.pauseVideo();
     }
 
-    protected void playVideo(){
+    protected void playVideo() {
         mVrVideoView.playVideo();
     }
 
-    @Override
-    public void onSaveInstanceState(Bundle savedInstanceState) {
-        savedInstanceState.putLong(STATE_PROGRESS_TIME, mVrVideoView.getCurrentPosition());
-        savedInstanceState.putLong(STATE_VIDEO_DURATION, mVrVideoView.getDuration());
-        savedInstanceState.putBoolean(STATE_IS_PAUSED, isPaused);
-        super.onSaveInstanceState(savedInstanceState);
-    }
-
-    @Override
-    public void onRestoreInstanceState(Bundle savedInstanceState) {
-        super.onRestoreInstanceState(savedInstanceState);
-
-        long progressTime = savedInstanceState.getLong(STATE_PROGRESS_TIME);
-        mVrVideoView.seekTo(progressTime);
-        seekBar.setMax((int) savedInstanceState.getLong(STATE_VIDEO_DURATION));
-        seekBar.setProgress((int) progressTime);
-
-        isPaused = savedInstanceState.getBoolean(STATE_IS_PAUSED);
-        if (isPaused) {
-            mVrVideoView.pauseVideo();
-        }
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-        if (DBG) { Log.i("TAG","********Status-Resume********"); }
-        if (mVrVideoView != null) {
-            mVrVideoView.resumeRendering(); // Resume the 3D rendering.
-        }
-        updateStatusText(); // Update the text to account for the paused video in onPause().
-    }
-
-    @Override
-    protected void onPause() {
-        super.onPause();
-        if (DBG) { Log.i("TAG","********Status-Pause********"); }
-        // Prevent the view from rendering continuously when in the background.
-        if (mVrVideoView != null) {
-            mVrVideoView.pauseRendering();
-        }
-        // If the video is playing when onPause() is called, the default behavior will be to pause
-        // the video and keep it paused when onResume() is called.
-        isPaused = true;
-    }
-
-    @Override
-    public void onStop() {
-        super.onStop();
-    }
-
-    @Override
-    protected void onDestroy() {
-        if (DBG) { Log.i("TAG","********Status-Destroy********"); }
-        if (mVrVideoView != null) {
-            mVrVideoView.shutdown(); // Destroy the widget and free memory.
-        }
-        super.onDestroy();
-    }
-
-    private void togglePause() {
-        if (isPaused) {
-           if(DBG){Log.i("TAG","********Status-playvideo********");}
-            mVrVideoView.playVideo();
-//            mText.setText("Play");
-        } else {
-            if(DBG){Log.i("TAG","********Status-pausevideo********");}
-            mVrVideoView.pauseVideo();
-//            mText.setText("Pause");
-        }
-        isPaused = !isPaused;
-        updateStatusText();
-    }
-
-    private void updateStatusText() {
-        StringBuilder status = new StringBuilder();
-        status.append(isPaused ? "Paused: " : "Playing: ");
-        status.append(String.format("%.2f", mVrVideoView.getCurrentPosition() / 1000f));
-        status.append(" / ");
-        status.append(mVrVideoView.getDuration() / 1000f);
-        status.append(" seconds.");
-        status.append("Speed(ms): ");
-        status.append(getSpeedToMilliSecond());
-        statusText.setText(status.toString());
-    }
-
-    protected void handleCommand(String[] arr){
-
-    }
-
-    public int getLoadVideoStatus() {
-        return loadVideoStatus;
-    }
-
     //set speed factor(multiplication of 1000 to make factor as millisecond)
-    private void setSpeed(double speed){
+    private void setSpeed(double speed) {
 //        if (speed > 0) { // 입력값이 양수
         if (mSpeed >= 0) { // 기존값이 없거나, 있었다고 하면 Default + (speed - 0.1)
             mSpeed = (DEFAULT_SPEED + (speed - 0.1));
@@ -448,34 +380,183 @@ public class VrVideoActivity extends Activity {
         return (mSpeed * TIME_THRESHOLD_SECOND);
     }
 
-    public double getSpeedToSecond(){
+    public double getSpeedToSecond() {
         return mSpeed;
     }
 
     //set score
-    private void setScore(int i){
+    private void setScore(int i) {
         score = i;
     }
 
     //get current score
-    public int getScore(){
+    public int getScore() {
         return score;
     }
 
     //set turn factor
-    private void setTurn(int i){
+    private void setTurn(int i) {
         turn = i;
     }
 
     //get current turn factor
-    public int getTurn(){
+    public int getTurn() {
         return turn;
     }
 
-    public void reset(){
+    @Override
+    public void onBackPressed() {
+
+        LayoutInflater layoutInflater
+                = (LayoutInflater) getBaseContext()
+                .getSystemService(LAYOUT_INFLATER_SERVICE);
+        final View popupView = layoutInflater.inflate(popup, null);
+        final PopupWindow popupWindow = new PopupWindow(
+                popupView,
+                WindowManager.LayoutParams.WRAP_CONTENT,
+                WindowManager.LayoutParams.WRAP_CONTENT);
+        popupWindow.setTouchable(true); // PopupWindow 위에서 Button의 Click이 가능하도록 setTouchable(true);
+        Button btnYes = (Button) popupView.findViewById(R.id.btn_yes); // PopupWindow 상의 View의 Button 연결
+        Button btnNo = (Button) popupView.findViewById(R.id.btn_no);
+
+        if (DBG) {
+            Log.i(TAG, "check - Popup");
+        }
+
+//        popupWindow.showAsDropDown(mVrVideoView);
+        popupWindow.showAtLocation(mVrVideoView, Gravity.CENTER, 0, 0);
+
+        if (DBG) {
+            Log.i(TAG, "check - Popup" + popupWindow.isShowing());
+        }
+
+        btnYes.setOnClickListener(new Button.OnClickListener(
+
+        ) {
+            @Override
+            public void onClick(View view) {
+                togglePause();
+                mVrVideoView.seekTo(0);
+                finish();
+            }
+        });
+
+        btnNo.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                popupWindow.dismiss();
+            }
+        });
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle savedInstanceState) {
+        savedInstanceState.putLong(STATE_PROGRESS_TIME, mVrVideoView.getCurrentPosition());
+        savedInstanceState.putLong(STATE_VIDEO_DURATION, mVrVideoView.getDuration());
+        savedInstanceState.putBoolean(STATE_IS_PAUSED, isPaused);
+        super.onSaveInstanceState(savedInstanceState);
+    }
+
+    @Override
+    public void onRestoreInstanceState(Bundle savedInstanceState) {
+        super.onRestoreInstanceState(savedInstanceState);
+
+        long progressTime = savedInstanceState.getLong(STATE_PROGRESS_TIME);
+        mVrVideoView.seekTo(progressTime);
+//        seekBar.setMax((int) savedInstanceState.getLong(STATE_VIDEO_DURATION));
+//        seekBar.setProgress((int) progressTime);
+
+        isPaused = savedInstanceState.getBoolean(STATE_IS_PAUSED);
+        if (isPaused) {
+            mVrVideoView.pauseVideo();
+        }
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (DBG) {
+            Log.i("TAG", "********Status-Resume********");
+        }
+        if (mVrVideoView != null) {
+            mVrVideoView.resumeRendering(); // Resume the 3D rendering.
+        }
+//        updateStatusText(); // Update the text to account for the paused video in onPause().
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        if (DBG) {
+            Log.i("TAG", "********Status-Pause********");
+        }
+        // Prevent the view from rendering continuously when in the background.
+        if (mVrVideoView != null) {
+            mVrVideoView.pauseRendering();
+        }
+        // If the video is playing when onPause() is called, the default behavior will be to pause
+        // the video and keep it paused when onResume() is called.
+        isPaused = true;
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+    }
+
+    @Override
+    protected void onDestroy() {
+        if (DBG) {
+            Log.i("TAG", "********Status-Destroy********");
+        }
+        if (mVrVideoView != null) {
+            mVrVideoView.shutdown(); // Destroy the widget and free memory.
+        }
+        super.onDestroy();
+    }
+
+    private void togglePause() {
+        if (isPaused) {
+            if (DBG) {
+                Log.i("TAG", "********Status-playvideo********");
+            }
+            mVrVideoView.playVideo();
+//            mText.setText("Play");
+        } else {
+            if (DBG) {
+                Log.i("TAG", "********Status-pausevideo********");
+            }
+            mVrVideoView.pauseVideo();
+//            mText.setText("Pause");
+        }
+        isPaused = !isPaused;
+//        updateStatusText();
+    }
+
+//    private void updateStatusText() {
+//        StringBuilder status = new StringBuilder();
+//        status.append(isPaused ? "Paused: " : "Playing: ");
+//        status.append(String.format("%.2f", mVrVideoView.getCurrentPosition() / 1000f));
+//        status.append(" / ");
+//        status.append(mVrVideoView.getDuration() / 1000f);
+//        status.append(" seconds.");
+//        status.append("Speed(ms): ");
+//        status.append(getSpeedToMilliSecond());
+//        statusText.setText(status.toString());
+//    }
+
+    protected void handleCommand(String[] arr) {
+
+    }
+
+    public int getLoadVideoStatus() {
+        return loadVideoStatus;
+    }
+
+    public void reset() {
         togglePause();
         mVrVideoView.seekTo(0);
-        updateStatusText();
+//        updateStatusText();
     }
 
     /**
@@ -486,7 +567,7 @@ public class VrVideoActivity extends Activity {
         public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
             if (fromUser) {
                 mVrVideoView.seekTo(progress);
-                updateStatusText();
+//                updateStatusText();
             } // else this was from the ActivityEventHandler.onNewFrame()'s seekBar.setProgress update.
         }
 
@@ -511,8 +592,8 @@ public class VrVideoActivity extends Activity {
         public void onLoadSuccess() {
             Log.i(TAG, "Sucessfully loaded video " + mVrVideoView.getDuration());
             loadVideoStatus = LOAD_VIDEO_STATUS_SUCCESS;
-            seekBar.setMax((int) mVrVideoView.getDuration());
-            updateStatusText();
+//            seekBar.setMax((int) mVrVideoView.getDuration());
+//            updateStatusText();
         }
 
         /**
@@ -522,7 +603,7 @@ public class VrVideoActivity extends Activity {
         public void onLoadError(String errorMessage) {
             // An error here is normally due to being unable to decode the video format.
             loadVideoStatus = LOAD_VIDEO_STATUS_ERROR;
-            Toast.makeText(VrVideoActivity.this, "Error loading video: " + errorMessage, Toast.LENGTH_LONG).show();
+            Toast.makeText(VrVideoActivity.this, "Error loading video: " + errorMessage, Toast.LENGTH_SHORT).show();
             Log.e(TAG, "Error loading video: " + errorMessage);
         }
 
@@ -538,14 +619,14 @@ public class VrVideoActivity extends Activity {
         //change onNewFrame for play speed control with speed factor from bluetooth
         public void onNewFrame() {
             if (!isPaused) {
-                long speed = (long)getSpeedToMilliSecond();
+                long speed = (long) getSpeedToMilliSecond();
                 long videoPosition = mVrVideoView.getCurrentPosition();
                 if (speed != 0) {
                     videoPosition += speed;
                     mVrVideoView.seekTo(videoPosition);
                 }
-                seekBar.setProgress((int)videoPosition);
-                updateStatusText();
+//                seekBar.setProgress((int) videoPosition);
+//                updateStatusText();
             }
         }
 
@@ -569,60 +650,63 @@ public class VrVideoActivity extends Activity {
 
         @Override
         protected void onPreExecute() {
-            Log.d(TAG,"onPreExecute!!!");
+            Log.d(TAG, "onPreExecute!!!");
             super.onPreExecute();
         }
 
         @Override
         protected Boolean doInBackground(Pair<Uri, Options>... fileInformation) {
-            Log.d(TAG,"doInBackground!!!");
+            Log.d(TAG, "doInBackground!!!");
             Boolean result = false;
 
-                if (fileInformation == null || fileInformation.length < 1
-                        || fileInformation[0] == null || fileInformation[0].first == null) {
-                    // No intent was specified, so we default to playing the local stereo-over-under video.
-                    Options options = new Options();
-                    options.inputFormat = Options.FORMAT_DEFAULT;
-                    options.inputType = Options.TYPE_MONO;
-                    videoOptions = options;
+            if (fileInformation == null || fileInformation.length < 1
+                    || fileInformation[0] == null || fileInformation[0].first == null) {
+                // No intent was specified, so we default to playing the local stereo-over-under video.
+                Options options = new Options();
+                options.inputFormat = Options.FORMAT_DEFAULT;
+                options.inputType = Options.TYPE_MONO;
+                videoOptions = options;
 //                    //bluetooth에서 select한 video를 가져온다
 //                    if(DBG){ Log.i(TAG, "check - uri setting");}
-//                    String videoName = getVideo();
-//                    videoUri = Uri.parse(videoName);
+                String videoName = getVideo();
+                videoUri = Uri.parse(videoName);
 
-                    //test 용 uri
-                    videoUri = Uri.parse(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MOVIES).getAbsolutePath() + File.separator + "car.mp4");
+                //test 용 uri
+//                videoUri = Uri.parse(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MOVIES).getAbsolutePath() + File.separator + "car.mp4");
 
 
-                    result = true;
-                } else {
-                    videoOptions = fileInformation[0].second;
-                    videoUri = fileInformation[0].first;
-                }
+                result = true;
+            } else {
+                videoOptions = fileInformation[0].second;
+                videoUri = fileInformation[0].first;
+            }
             return result;
         }
 
         @Override
         protected void onProgressUpdate(Void... values) {
-            Log.d(TAG,"onProgressUpdate!!!");
+            Log.d(TAG, "onProgressUpdate!!!");
             super.onProgressUpdate(values);
         }
 
         @Override
         protected void onPostExecute(Boolean aBoolean) {
             try {
-                Log.d(TAG,"onPostExecute!!!");
+                Log.d(TAG, "onPostExecute!!!");
                 if (aBoolean) {
-                    mVrVideoView.setDisplayMode(VrVideoView.DisplayMode.FULLSCREEN_MONO);
-                    mVrVideoView.setStereoModeButtonEnabled(false);
+                    mVrVideoView.setDisplayMode(VrVideoView.DisplayMode.FULLSCREEN_STEREO);
+//                    mVrVideoView.setStereoModeButtonEnabled(false);
+                    mVrVideoView.setInfoButtonEnabled(false);
+                    mVrVideoView.setFullscreenButtonEnabled(false);
 
                     //bluetooth에서 select한 video를 가져온다
-//                    String videoName = getVideo();
-//                    if(DBG){Log.i(TAG, "check - onPostexecute");}
-//                    mVrVideoView.loadVideoFromAsset(videoName, videoOptions);
+                    String videoName = getVideo();
+                    if (DBG) {
+                        Log.i(TAG, "check - onPostexecute");
+                    }
+                    mVrVideoView.loadVideoFromAsset(videoName, videoOptions);
 
-                    //mVrVideoView.loadVideoFromAsset(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MOVIES).getAbsolutePath() + File.separator + "car.mp4", videoOptions);
-                    mVrVideoView.loadVideo(videoUri, videoOptions);
+//                    mVrVideoView.loadVideo(videoUri, videoOptions);
                     Log.d(TAG, "### loadVideoFromAsset()");
                 } else {
                     mVrVideoView.loadVideo(videoUri, videoOptions);

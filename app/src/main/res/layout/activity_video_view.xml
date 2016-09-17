@@ -1,59 +1,56 @@
-<?xml version="1.0" encoding="utf-8"?>
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<?xml version="1.0" encoding="utf-8"?><!--<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"--><!--android:layout_width="match_parent"--><!--android:layout_height="wrap_content"--><!--android:background="@android:color/white">-->
+
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/main_layout"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:background="@android:color/white">
+    android:layout_height="match_parent"
+    android:orientation="horizontal"
+    android:padding="10dip"
+    android:weightSum="1">
 
-    <LinearLayout
+    <com.google.vr.sdk.widgets.video.VrVideoView
+        android:id="@+id/video_view"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:id="@+id/main_layout"
-        android:padding="10dip"
-        android:orientation="vertical" >
+        android:layout_height="match_parent"
+        android:scrollbars="@null"
+        android:layout_weight="1" />
 
-        <com.google.vr.sdk.widgets.video.VrVideoView
-            android:id="@+id/video_view"
-            android:layout_width="match_parent"
-            android:scrollbars="@null"
-            android:layout_height="250dip"/>
+    <!-- Seeking UI & progress indicator.-->
+    <!--<SeekBar-->
+    <!--android:id="@+id/seek_bar"-->
+    <!--style="?android:attr/progressBarStyleHorizontal"-->
+    <!--android:layout_height="32dp"-->
+    <!--android:layout_width="fill_parent"/>-->
 
-        <!-- Seeking UI & progress indicator.-->
-        <SeekBar
-            android:id="@+id/seek_bar"
-            style="?android:attr/progressBarStyleHorizontal"
-            android:layout_height="32dp"
-            android:layout_width="fill_parent"/>
+    <!--<LinearLayout-->
+    <!--android:layout_width="match_parent"-->
+    <!--android:layout_height="wrap_content"-->
+    <!--android:id="@+id/debug_layout"-->
+    <!--android:padding="10dip"-->
+    <!--android:orientation="horizontal" >-->
+    <!--<TextView-->
+    <!--android:id="@+id/status_text"-->
+    <!--android:layout_height="match_parent"-->
+    <!--android:layout_width="0dp"-->
+    <!--android:layout_weight="4"-->
+    <!--android:text="Loading Video..."-->
+    <!--android:layout_centerInParent="true"-->
+    <!--android:textSize="@dimen/caption_text_size"-->
+    <!--android:paddingStart="32dp"-->
+    <!--android:paddingEnd="32dp"/>-->
 
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:id="@+id/debug_layout"
-            android:padding="10dip"
-            android:orientation="horizontal" >
-            <TextView
-                android:id="@+id/status_text"
-                android:layout_height="match_parent"
-                android:layout_width="0dp"
-                android:layout_weight="4"
-                android:text="Loading Video..."
-                android:layout_centerInParent="true"
-                android:textSize="@dimen/caption_text_size"
-                android:paddingStart="32dp"
-                android:paddingEnd="32dp"/>
+    <!--<Button-->
+    <!--android:id="@+id/speed_up_test"-->
+    <!--android:layout_height="match_parent"-->
+    <!--android:layout_width="0dp"-->
+    <!--android:layout_weight="1"-->
+    <!--android:text="Speed\nUp"/>-->
 
-            <Button
-                android:id="@+id/speed_up_test"
-                android:layout_height="match_parent"
-                android:layout_width="0dp"
-                android:layout_weight="1"
-                android:text="Speed\nUp"/>
-
-            <Button
-                android:id="@+id/speed_down_test"
-                android:layout_height="match_parent"
-                android:layout_width="0dp"
-                android:layout_weight="1"
-                android:text="Speed\nDown"/>
-        </LinearLayout>
-    </LinearLayout>
-</ScrollView>
+    <!--<Button-->
+    <!--android:id="@+id/speed_down_test"-->
+    <!--android:layout_height="match_parent"-->
+    <!--android:layout_width="0dp"-->
+    <!--android:layout_weight="1"-->
+    <!--android:text="Speed\nDown"/>-->
+    <!--</LinearLayout>-->
+</LinearLayout><!--</ScrollView>-->
