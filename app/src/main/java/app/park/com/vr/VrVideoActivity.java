@@ -229,10 +229,10 @@ public class VrVideoActivity extends Activity {
             // Cancel any task from a previous intent sent to this activity.
             backgroundVideoLoaderTask.cancel(true);
         }
-        if (STATUS_PLAY == 1) {
-            backgroundVideoLoaderTask = new VideoLoaderTask();
-            backgroundVideoLoaderTask.execute(Pair.create(fileUri, videoOptions));
-        }
+//        if (STATUS_PLAY == 1) {
+//            backgroundVideoLoaderTask = new VideoLoaderTask();
+//            backgroundVideoLoaderTask.execute(Pair.create(fileUri, videoOptions));
+//        }
     }
 
     @Override
