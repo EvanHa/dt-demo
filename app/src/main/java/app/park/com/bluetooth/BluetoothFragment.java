@@ -308,4 +308,12 @@ public class BluetoothFragment extends Fragment {
         Intent intent = new Intent(getActivity() , VrVideoActivity.class);
         startActivity(intent);
     }
+
+    public boolean isBluetoothConnected() {
+        boolean result = false;
+        if (mBluetoothService.getState() == BluetoothService.STATE_CONNECTED) {
+            result = true;
+        }
+        return result;
+    }
 }

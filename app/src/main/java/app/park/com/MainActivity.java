@@ -60,6 +60,9 @@ public class MainActivity extends ActivityBase implements RadioGroup.OnCheckedCh
                 }
                 mDeviceRole = ROLE_CONTROLLER;
                 mVideoFragment.setButtonVisible();
+                if (mBluetoothFragment.isBluetoothConnected()) {
+                    updateUi(Constants.MESSAGE_BT_CONNECTED);
+                }
                 break;
             case R.id.radio_viewer:
                 if (DBG) {
