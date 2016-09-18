@@ -2,8 +2,8 @@ package app.park.com;
 
 import android.support.v4.app.FragmentTransaction;
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.RadioGroup;
-import android.widget.Toast;
 import app.park.com.bluetooth.BluetoothFragment;
 import app.park.com.bluetooth.Constants;
 import app.park.com.common.activities.ActivityBase;
@@ -56,7 +56,7 @@ public class MainActivity extends ActivityBase implements RadioGroup.OnCheckedCh
         switch(id) {
             case R.id.radio_controller:
                 if (DBG) {
-                    Toast.makeText(getApplicationContext(), "radio_controller", Toast.LENGTH_SHORT).show();
+                    Log.d(TAG, "radio_controller");
                 }
                 mDeviceRole = ROLE_CONTROLLER;
                 mVideoFragment.setButtonVisible();
@@ -66,7 +66,7 @@ public class MainActivity extends ActivityBase implements RadioGroup.OnCheckedCh
                 break;
             case R.id.radio_viewer:
                 if (DBG) {
-                    Toast.makeText(getApplicationContext(), "radio_viewer", Toast.LENGTH_SHORT).show();
+                    Log.d(TAG, "radio_viewer");
                 }
                 mDeviceRole = ROLE_VIEWER;
                 mVideoFragment.setButtonInVisible();

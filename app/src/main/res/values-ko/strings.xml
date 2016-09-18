@@ -2,12 +2,12 @@
     <string name="app_name">cardboard_demo</string>
     <string name="intro_message">
         <![CDATA[
-             " "(1) Select Controller on Device1\n
-             (2) Select Viewer on Device2\n
-             (3) Click Bluetooth discoverable button on Device1\n
-             (4) Click Bluetooth connect button on Device2\n
-             (5) Bluetooth pairing\n
-             (6) If you click the play button, the video would be play.\n
+             " "(1) Device1을 Controller로 선택\n
+             (2) Device2를 Viewer로 선택\n
+             (3) Device1에서 Bluetooth discoverable버튼 클릭\n
+             (4) Device2에서 Bluetooth connect버튼 클릭\n
+             (5) Device1과 Device2를 서로 페어링 하여 연결\n
+             (6) Device1(Controller)에서 play 버튼을 클릭하면 동영상 재생이 시작됩니다.\n
         ]]>
     </string>
 
