@@ -1,5 +1,15 @@
 package app.park.com.control;
 
+import java.math.BigDecimal;
+import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
+
+import app.park.com.R;
+import app.park.com.bluetooth.BluetoothHandler;
+import app.park.com.bluetooth.BluetoothService;
+import app.park.com.bluetooth.Constants;
+
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
@@ -18,15 +28,6 @@ import android.view.View.OnTouchListener;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.Toast;
-
-import java.math.BigDecimal;
-import java.util.Timer;
-import java.util.TimerTask;
-
-import app.park.com.R;
-import app.park.com.bluetooth.BluetoothHandler;
-import app.park.com.bluetooth.BluetoothService;
-import app.park.com.bluetooth.Constants;
 
 public class ControlActivity extends Activity implements SensorEventListener,
 		GestureDetector.OnGestureListener {
@@ -380,10 +381,11 @@ public class ControlActivity extends Activity implements SensorEventListener,
 							if(btnAccElapsedTime >= 1) {
 								// 처음 액셀 눌렀으면 재생 신호 보내줌
 								if(!isFirstAccleated) {
-									mBluetoothService.sendMessage("play1////1");
-									Log.d(TAG, "isFirstAccleated!!!!       play1////1");
+									mBluetoothService.sendMessage("play////1");
+									Log.d(TAG, "isFirstAccleated!!!!       play////1");
 									isFirstAccleated = true;
 								}
+
 
 								// 1초당 0.1씩 속도 증가
 								velocity = velocity.add(VELOCITY_INCREASE);
