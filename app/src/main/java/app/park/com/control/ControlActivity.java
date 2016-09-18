@@ -72,10 +72,10 @@ public class ControlActivity extends Activity implements SensorEventListener,
 	static float btnAccElapsedTime = 0;
 	static float btnBrakeElapsedTime = 0;
 
-	static final BigDecimal VELOCITY_DEFAULT = new BigDecimal("0.1");
-	static final BigDecimal VELOCITY_INCREASE = new BigDecimal("0.1");
-	static final BigDecimal VELOCITY_BREAK_DECREASE = new BigDecimal("0.5");
-	static final BigDecimal VELOCITY_DECREASE = new BigDecimal("0.1");
+	static final BigDecimal VELOCITY_DEFAULT = new BigDecimal("0.5"); // 시작시간
+	static final BigDecimal VELOCITY_INCREASE = new BigDecimal("0.1"); // 속도 증가값
+	static final BigDecimal VELOCITY_BREAK_DECREASE = new BigDecimal("0.5"); // 속도 감소값 (브레이크)
+	static final BigDecimal VELOCITY_DECREASE = new BigDecimal("0.1"); // 속도 감소값
 
 	static final String BLUETHOOTH_MESSAGE_SEPARATOR = "////";
 	static final String STATUS_GAMERUN = "gamerun";
@@ -324,19 +324,19 @@ public class ControlActivity extends Activity implements SensorEventListener,
 							}
 						}
 
-						turnSignalTimer = new Timer();
-						turnSignalTimer.scheduleAtFixedRate(new TimerTask() {
-							public void run() {
-								sendMessage(STATUS_GAMERUN, velocity, HANDLE_STATUS, TURN_SIGNAL_STATUS, ACC_STATUS, BRAKE_STATUS);
-							}
-						}, 0, 1000);
+//						turnSignalTimer = new Timer();
+//						turnSignalTimer.scheduleAtFixedRate(new TimerTask() {
+//							public void run() {
+//								sendMessage(STATUS_GAMERUN, velocity, HANDLE_STATUS, TURN_SIGNAL_STATUS, ACC_STATUS, BRAKE_STATUS);
+//							}
+//						}, 0, 1000);
 
 						break;
 				}
-				if(TURN_SIGNAL_STATUS != TURN_SIGNAL_STATUS2) {
-					sendMessage(STATUS_GAMERUN, velocity, HANDLE_STATUS, TURN_SIGNAL_STATUS, ACC_STATUS, BRAKE_STATUS);
-					TURN_SIGNAL_STATUS2 = TURN_SIGNAL_STATUS;
-				}
+//				if(TURN_SIGNAL_STATUS != TURN_SIGNAL_STATUS2) {
+//					sendMessage(STATUS_GAMERUN, velocity, HANDLE_STATUS, TURN_SIGNAL_STATUS, ACC_STATUS, BRAKE_STATUS);
+//					TURN_SIGNAL_STATUS2 = TURN_SIGNAL_STATUS;
+//				}
 				return true;
 			}
 		});
@@ -378,7 +378,7 @@ public class ControlActivity extends Activity implements SensorEventListener,
 					timer2.scheduleAtFixedRate(new TimerTask() {
 						public void run() {
 							// 1초 이상 눌려있었으면
-							if(btnAccElapsedTime >= 1) {
+//							if(btnAccElapsedTime >= 1) {
 								// 처음 액셀 눌렀으면 재생 신호 보내줌
 								if(!isFirstAccleated) {
 									mBluetoothService.sendMessage("play////1");
@@ -395,7 +395,7 @@ public class ControlActivity extends Activity implements SensorEventListener,
 								if(velocity.compareTo(new BigDecimal("1.5")) > 0) {
 									velocity = new BigDecimal("1.5");
 									Log.d(TAG, "최대속도 제한 1.5");
-								}
+//								}
 
 								mBluetoothService.sendMessage("gamerun////" + velocity.doubleValue() + "////" + score);
 								Log.d(TAG, "gamerun////" + velocity + "////" + score);
@@ -444,12 +444,12 @@ public class ControlActivity extends Activity implements SensorEventListener,
 
 
 
-//				accTimer = new Timer();
-//				accTimer.scheduleAtFixedRate(new TimerTask() {
-//					public void run() {
-//						sendMessage(STATUS_GAMERUN, velocity, HANDLE_STATUS, TURN_SIGNAL_STATUS, ACC_STATUS, BRAKE_STATUS);
-//					}
-//				}, 0, 1000);
+				accTimer = new Timer();
+				accTimer.scheduleAtFixedRate(new TimerTask() {
+					public void run() {
+						sendMessage(STATUS_GAMERUN, velocity, HANDLE_STATUS, TURN_SIGNAL_STATUS, ACC_STATUS, BRAKE_STATUS);
+					}
+				}, 0, 1000);
 
 				return true;
 			}
@@ -524,6 +524,11 @@ public class ControlActivity extends Activity implements SensorEventListener,
 								if (velocity.compareTo(VELOCITY_DECREASE) >= 0) {
 									// 1초당 0.1씩 감소
 									velocity = velocity.subtract(VELOCITY_INCREASE);
+
+									// 속도가 0.5보다 아래면 0.5으로 보정
+									if(velocity.compareTo(VELOCITY_DEFAULT) < 0) {
+										velocity = VELOCITY_DEFAULT;
+									}
 									mBluetoothService.sendMessage("gamerun////" + velocity.doubleValue() + "////" + score);
 									Log.d(TAG, "gamerun////" + velocity + "////" + score);
 									Log.d(TAG, "[2]자연 속도감소 -0.1");
@@ -536,12 +541,12 @@ public class ControlActivity extends Activity implements SensorEventListener,
 				}
 
 
-//				brakeTimer = new Timer();
-//				brakeTimer.scheduleAtFixedRate(new TimerTask() {
-//					public void run() {
-//						sendMessage(STATUS_GAMERUN, velocity, HANDLE_STATUS, TURN_SIGNAL_STATUS, ACC_STATUS, BRAKE_STATUS);
-//					}
-//				}, 0, 1000);
+				brakeTimer = new Timer();
+				brakeTimer.scheduleAtFixedRate(new TimerTask() {
+					public void run() {
+						sendMessage(STATUS_GAMERUN, velocity, HANDLE_STATUS, TURN_SIGNAL_STATUS, ACC_STATUS, BRAKE_STATUS);
+					}
+				}, 0, 1000);
 				return true;
 			}
 		});
@@ -570,7 +575,7 @@ public class ControlActivity extends Activity implements SensorEventListener,
 				// roll 각도가 -90도, -30도 사이에 있으면 좌회전
 				if(-90 < roll1 && roll1 < -30) {
 					HANDLE_STATUS = 1;
-					sendMessage(STATUS_GAMERUN, velocity, HANDLE_STATUS, TURN_SIGNAL_STATUS, ACC_STATUS, BRAKE_STATUS);
+//					sendMessage(STATUS_GAMERUN, velocity, HANDLE_STATUS, TURN_SIGNAL_STATUS, ACC_STATUS, BRAKE_STATUS);
 
 					// 30~32초 사이에 좌회전 했으면 task3 변수 = true
 					if(30 <=seconds && seconds <=32) {
@@ -591,7 +596,7 @@ public class ControlActivity extends Activity implements SensorEventListener,
 				// roll 각도가 30도, 90도 사이에 있으면 우회전
 				if(30 < roll1 && roll1 < 90) {
 					HANDLE_STATUS = 2;
-					sendMessage(STATUS_GAMERUN, velocity, HANDLE_STATUS, TURN_SIGNAL_STATUS, ACC_STATUS, BRAKE_STATUS);
+//					sendMessage(STATUS_GAMERUN, velocity, HANDLE_STATUS, TURN_SIGNAL_STATUS, ACC_STATUS, BRAKE_STATUS);
 
 					// 40~42초 사이에 우회전 했으면 task5 변수 = true
 					if(40 <=seconds && seconds <=42) {
@@ -612,7 +617,7 @@ public class ControlActivity extends Activity implements SensorEventListener,
 				// roll 각도가 -30도, 30도 사이에 있으면 직진
 				if(-30 <= roll1 && roll1 <= 30) {
 					HANDLE_STATUS = 0;
-					sendMessage(STATUS_GAMERUN, velocity, HANDLE_STATUS, TURN_SIGNAL_STATUS, ACC_STATUS, BRAKE_STATUS);
+//					sendMessage(STATUS_GAMERUN, velocity, HANDLE_STATUS, TURN_SIGNAL_STATUS, ACC_STATUS, BRAKE_STATUS);
 
 					// 50~52초 사이에 직진 했으면 task7 변수 = true
 					if(scenarioTask7) {
