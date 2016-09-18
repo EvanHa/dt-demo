@@ -69,6 +69,16 @@ public class VrVideoActivity extends Activity {
      */
     private static final String STATE_VIDEO_DURATION = "videoDuration";
 
+    // msg protocol : cmd////velocity////handle[0,1]////signalLight[0,1,2]////accel[0,1]////break[0,1]
+    private static final int  PROTOCOL_MSG_CMD = 0;
+    private static final int  PROTOCOL_MSG_PLAY_NUM = 1; // If command is play, next value is play video number
+    private static final int  PROTOCOL_MSG_SPEED = 1;
+    private static final int  PROTOCOL_MSG_SCORE = 2;   // Should be removed.
+    private static final int  PROTOCOL_MSG_HANDLE = 2;
+    private static final int  PROTOCOL_MSG_SIGNALLIGHT = 3;
+    private static final int  PROTOCOL_MSG_ACCEL = 4;
+    private static final int  PROTOCOL_MSG_BREAK = 5;
+
     /**
      * Arbitrary constants and variable to track load status. In this example, this variable should
      * only be accessed on the UI thread. In a real app, this variable would be code that performs
@@ -123,7 +133,6 @@ public class VrVideoActivity extends Activity {
 
         // Initial launch of the app or an Activity recreation due to rotation.
         handleIntent(getIntent());
-
     }
 
     /**
@@ -219,12 +228,13 @@ public class VrVideoActivity extends Activity {
     }
 
     private void executeCommand(String[] arr) {
+        // msg protocol : cmd////velocity////handle[0,1]////signalLight[0,1,2]////accel[0,1]////break[0,1]
         // play||||1,2,3 -> 1,2,3번 동영상 재생
         // stop||||1,2,3 -> 현재 동영상 멈춤
         // cmd|||||40||||90 -> 속도 40, 점수 90
-        switch (arr[0]) {
+        switch (arr[PROTOCOL_MSG_CMD]) {
             case "play":
-                int video = Integer.parseInt(arr[1]);
+                int video = Integer.parseInt(arr[PROTOCOL_MSG_PLAY_NUM]);
                 if (video != 0) {
                     setVideo(video);
                     backgroundVideoLoaderTask = new VideoLoaderTask();
@@ -241,12 +251,12 @@ public class VrVideoActivity extends Activity {
                 if (DBG) {
                     Log.i(TAG, "check - executeCommand");
                 }
-                if (arr[2] != null) {
-                    int score = Integer.parseInt(arr[2]);
+                if (arr[PROTOCOL_MSG_SCORE] != null) {
+                    int score = Integer.parseInt(arr[PROTOCOL_MSG_SCORE]);
                     setScore(score);
                 }
-                if (arr[1] != null) {
-                    double speed = Double.parseDouble((arr[1]));
+                if (arr[PROTOCOL_MSG_SPEED] != null) {
+                    double speed = Double.parseDouble((arr[PROTOCOL_MSG_SPEED]));
                     setSpeed(speed);
                 }
 
