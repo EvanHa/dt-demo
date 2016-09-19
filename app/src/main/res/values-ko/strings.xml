@@ -35,8 +35,9 @@
 
     <string name="btn_bt_discoverable">Bluetooth\ndiscoverable</string>
     <string name="btn_bt_connect">Bluetooth\nconnect</string>
-    <string name="btn_play">play</string>
-    <string name="btn_pause">pause</string>
+    <string name="btn_play1">Play 1</string>
+    <string name="btn_play2">Play 2</string>
+    <string name="btn_play3">Play 3</string>
 
     <string name="device_role">Device Role</string>
     <string name="radio_controller">Controller</string>
