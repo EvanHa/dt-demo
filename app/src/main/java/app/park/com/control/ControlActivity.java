@@ -73,6 +73,7 @@ public class ControlActivity extends Activity implements SensorEventListener,
 	static float btnBrakeElapsedTime = 0;
 
 	static final BigDecimal VELOCITY_DEFAULT = new BigDecimal("0.5"); // 시작시간
+	static final BigDecimal VELOCITY_MAX = new BigDecimal("1.5"); // 시작시간
 	static final BigDecimal VELOCITY_INCREASE = new BigDecimal("0.1"); // 속도 증가값
 	static final BigDecimal VELOCITY_BREAK_DECREASE = new BigDecimal("0.5"); // 속도 감소값 (브레이크)
 	static final BigDecimal VELOCITY_DECREASE = new BigDecimal("0.1"); // 속도 감소값
@@ -116,7 +117,7 @@ public class ControlActivity extends Activity implements SensorEventListener,
 //			Log.d(TAG, "velocity = " + velocity);
 
 			if(isFirstAccleated) {
-				sendMessage("전체 1초당 스레드", "gamerun");
+				sendMessage("전체 1초당 스레드", STATUS_GAMERUN);
 			}
 
 			/*
@@ -331,14 +332,14 @@ public class ControlActivity extends Activity implements SensorEventListener,
 //						turnSignalTimer = new Timer();
 //						turnSignalTimer.scheduleAtFixedRate(new TimerTask() {
 //							public void run() {
-//								sendMessage("XXX", "gamerun");
+//								sendMessage("XXX", STATUS_GAMERUN);
 //							}
 //						}, 0, 1000);
 
 						break;
 				}
 //				if(TURN_SIGNAL_STATUS != TURN_SIGNAL_STATUS2) {
-//					sendMessage("XXX", "gamerun");
+//					sendMessage("XXX", STATUS_GAMERUN);
 //					TURN_SIGNAL_STATUS2 = TURN_SIGNAL_STATUS;
 //				}
 				return true;
@@ -357,7 +358,7 @@ public class ControlActivity extends Activity implements SensorEventListener,
 				// 눌렀을때
 				if (event.getAction() == MotionEvent.ACTION_DOWN) {
 					ACC_STATUS = 1;
-					sendMessage("엑셀누름", "gamerun");
+					sendMessage("엑셀누름", STATUS_GAMERUN);
 
 					// 엑셀 누름 변수 = true
 					isAccPressed = true;
@@ -395,7 +396,7 @@ public class ControlActivity extends Activity implements SensorEventListener,
 							accTimer = new Timer();
 							accTimer.scheduleAtFixedRate(new TimerTask() {
 								public void run() {
-									sendMessage("엑셀 1초당", "gamerun");
+									sendMessage("엑셀 1초당", STATUS_GAMERUN);
 								}
 							}, 0, 1000);
 
@@ -405,12 +406,12 @@ public class ControlActivity extends Activity implements SensorEventListener,
 //								Log.d(TAG, "엑셀 속도증가 +0.1");
 
 								// 최대 속도는 1.5임
-								if(velocity.compareTo(new BigDecimal("1.5")) > 0) {
-									velocity = new BigDecimal("1.5");
+								if(velocity.compareTo(VELOCITY_MAX) > 0) {
+									velocity = VELOCITY_MAX;
 //									Log.d(TAG, "최대속도 제한 1.5");
 //								}
 
-								sendMessage("gamerun","엑셀 속도 증가시");
+								sendMessage("엑셀 속도 증가시", STATUS_GAMERUN);
 //								mBluetoothService.sendMessage("gamerun////" + velocity.doubleValue() + "////" + score);
 //								Log.d(TAG, "gamerun////" + velocity + "////" + score);
 							}
@@ -422,7 +423,7 @@ public class ControlActivity extends Activity implements SensorEventListener,
 					// 엑셀 뗐을 때
 				} else if (event.getAction() == MotionEvent.ACTION_UP) {
 					ACC_STATUS = 0;
-					sendMessage("엑셀 뗌", "gamerun");
+					sendMessage("엑셀 뗌", STATUS_GAMERUN);
 
 					// 엑셀 누름 변수 = false
 					isAccPressed = false;
@@ -453,7 +454,7 @@ public class ControlActivity extends Activity implements SensorEventListener,
 //									Log.d(TAG, "gamerun////" + velocity + "////" + score);
 								}
 							}
-						}, 1000, 1000);
+						}, 0, 1000);
 					}else {
 						// 브레이크, 엑셀 중의 하나라도 누르고 있으면 자연속도 감소 타이머 cancel
 						if(timer4!=null) timer4.cancel();
@@ -475,7 +476,7 @@ public class ControlActivity extends Activity implements SensorEventListener,
 				// 눌렀을때
 				if (event.getAction() == MotionEvent.ACTION_DOWN) {
 					BRAKE_STATUS = 1;
-					sendMessage("브레이크 누름", "gamerun");
+					sendMessage("브레이크 누름", STATUS_GAMERUN);
 
 					isBreakPressed = true;
 
@@ -485,7 +486,7 @@ public class ControlActivity extends Activity implements SensorEventListener,
 					brakeTimer = new Timer();
 					brakeTimer.scheduleAtFixedRate(new TimerTask() {
 						public void run() {
-							sendMessage("브레이크 1초당", "gamerun");
+							sendMessage("브레이크 1초당", STATUS_GAMERUN);
 						}
 					}, 0, 1000);
 
@@ -530,7 +531,7 @@ public class ControlActivity extends Activity implements SensorEventListener,
 					// 뗐을 때
 				} else if (event.getAction() == MotionEvent.ACTION_UP) {
 					BRAKE_STATUS = 0;
-					sendMessage("브레이크 똄", "gamerun");
+					sendMessage("브레이크 똄", STATUS_GAMERUN);
 
 					// 브레이크 누름 변수 = false
 					isBreakPressed = false;
@@ -558,7 +559,7 @@ public class ControlActivity extends Activity implements SensorEventListener,
 //									Log.d(TAG, "[2]자연 속도감소 -0.1");
 								}
 							}
-						}, 1000, 1000);
+						}, 0, 1000);
 					}else {
 						if(timer4!=null) timer4.cancel();
 					}
@@ -593,7 +594,7 @@ public class ControlActivity extends Activity implements SensorEventListener,
 				// roll 각도가 -90도, -30도 사이에 있으면 좌회전
 				if(-90 < roll1 && roll1 < -30) {
 					HANDLE_STATUS = 1;
-//					sendMessage("핸들 좌회전", "gamerun");
+//					sendMessage("핸들 좌회전", STATUS_GAMERUN);
 
 					// 30~32초 사이에 좌회전 했으면 task3 변수 = true
 					if(30 <=seconds && seconds <=32) {
@@ -614,7 +615,7 @@ public class ControlActivity extends Activity implements SensorEventListener,
 				// roll 각도가 30도, 90도 사이에 있으면 우회전
 				if(30 < roll1 && roll1 < 90) {
 					HANDLE_STATUS = 2;
-//					sendMessage("핸들 우회전", "gamerun");
+//					sendMessage("핸들 우회전", STATUS_GAMERUN);
 
 					// 40~42초 사이에 우회전 했으면 task5 변수 = true
 					if(40 <=seconds && seconds <=42) {
@@ -635,7 +636,7 @@ public class ControlActivity extends Activity implements SensorEventListener,
 				// roll 각도가 -30도, 30도 사이에 있으면 직진
 				if(-30 <= roll1 && roll1 <= 30) {
 					HANDLE_STATUS = 0;
-//					sendMessage("핸들 직진", "gamerun");
+//					sendMessage("핸들 직진", STATUS_GAMERUN);
 
 					// 50~52초 사이에 직진 했으면 task7 변수 = true
 					if(scenarioTask7) {
@@ -650,7 +651,7 @@ public class ControlActivity extends Activity implements SensorEventListener,
 //				handleTimer = new Timer();
 //				handleTimer.scheduleAtFixedRate(new TimerTask() {
 //					public void run() {
-//						sendMessage("XXX", "gamerun");
+//						sendMessage("XXX", STATUS_GAMERUN);
 //					}
 //				}, 0, 1000);
 			}
@@ -764,7 +765,7 @@ public class ControlActivity extends Activity implements SensorEventListener,
 		}, 2000);
 	}
 
-	public void sendMessage(String cmd, String log) {
+	public void sendMessage(String log, String cmd) {
 
 		// cmd////velocity////handle[0,1,2]////깜빡이[0,1,2]////엑셀[0,1]////브레이크[0,1]
 		mBluetoothService.sendMessage(cmd + BLUETHOOTH_MESSAGE_SEPARATOR +
