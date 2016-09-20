@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Environment;
 import android.util.Log;
 import android.util.Pair;
 import android.view.Gravity;
@@ -20,6 +21,7 @@ import com.google.vr.sdk.widgets.video.VrVideoEventListener;
 import com.google.vr.sdk.widgets.video.VrVideoView;
 import com.google.vr.sdk.widgets.video.VrVideoView.Options;
 
+import java.io.File;
 import java.io.IOException;
 
 import app.park.com.R;
@@ -73,8 +75,7 @@ public class VrVideoActivity extends Activity {
     private static final int  PROTOCOL_MSG_CMD = 0;
     private static final int  PROTOCOL_MSG_PLAY_NUM = 1; // If command is play, next value is play video number
     private static final int  PROTOCOL_MSG_SPEED = 1;
-    private static final int  PROTOCOL_MSG_SCORE = 2;   // Should be removed.
-    private static final int  PROTOCOL_MSG_HANDLE = 2;
+    private static final int  PROTOCOL_MSG_STEER = 2;
     private static final int  PROTOCOL_MSG_SIGNALLIGHT = 3;
     private static final int  PROTOCOL_MSG_ACCEL = 4;
     private static final int  PROTOCOL_MSG_BREAK = 5;
@@ -100,11 +101,17 @@ public class VrVideoActivity extends Activity {
 
     //create speed factor to control speed (get it through bluetooth panel)
     private double mSpeed;
-    private int score;           //game score
-    private int turn;            //turn direction: 1 right, 2 left
+    private static int score = 100;           //game score
+
+    //previous values to check changes of factors(speed, turn signal light, steering wheel, accel., break)
+    private static double preSpeed;
+
+    //speed, turn signal light, steering wheel, accel., break
+    private static double speed;
 
     //selection of video
-    public static int SELECTED_VIDEO = 1;
+    private static int selectedVideo = 1;
+    private static int isPlaying = 0;
 
     /**
      * By default, the video will start playing as soon as it is loaded. This can be changed by using
@@ -177,6 +184,8 @@ public class VrVideoActivity extends Activity {
             // Cancel any task from a previous intent sent to this activity.
             backgroundVideoLoaderTask.cancel(true);
         }
+        //영상 시작 guide message
+        Toast.makeText(getApplicationContext(), "Contorller에서 Accel을 누르면 영상이 시작됩니다.", Toast.LENGTH_LONG).show();
     }
 
     @Override
@@ -202,14 +211,15 @@ public class VrVideoActivity extends Activity {
                         }
                         break;
                     case Constants.MESSAGE_READ:
-                        String[] arr = msg.split("////");
-                        Log.i("TAG", "*******" + msg);
-                        Log.i("TAG", "*******" + arr.length);
-                        Log.i("TAG", "*******" + arr[0]);
+                        if(msg != null) {
+                            String[] arr = msg.split("////");
+                            Log.i("TAG", "*******" + msg);
+                            Log.i("TAG", "*******" + arr.length);
+                            Log.i("TAG", "*******" + arr[0]);
 
-                        //명령어 실행 from bluetooth
-                        executeCommand(arr);
-
+                            //명령어 실행 from bluetooth
+                            executeCommand(arr);
+                        }
                         break;
                     case Constants.MESSAGE_WRITE:
 
@@ -228,49 +238,61 @@ public class VrVideoActivity extends Activity {
     }
 
     private void executeCommand(String[] arr) {
-        // msg protocol : cmd////velocity////handle[0,1]////signalLight[0,1,2]////accel[0,1]////break[0,1]
+        // msg protocol : cmd////velocity////handle[0,1,2]////signalLight[0,1,2]////accel[0,1]////break[0,1]
         // play||||1,2,3 -> 1,2,3번 동영상 재생
         // stop||||1,2,3 -> 현재 동영상 멈춤
         // cmd|||||40||||90 -> 속도 40, 점수 90
         switch (arr[PROTOCOL_MSG_CMD]) {
             case "play":
-                int video = Integer.parseInt(arr[PROTOCOL_MSG_PLAY_NUM]);
-                if (video != 0) {
-                    setVideo(video);
-                    backgroundVideoLoaderTask = new VideoLoaderTask();
-                    backgroundVideoLoaderTask.execute(Pair.create(fileUri, videoOptions));
+                if(arr[PROTOCOL_MSG_PLAY_NUM] != null) {
+                    int video = Integer.parseInt(arr[PROTOCOL_MSG_PLAY_NUM]);
+                    if (video != 0) {
+                        isPlaying = 1;
+                        setVideo(video);
+                        backgroundVideoLoaderTask = new VideoLoaderTask();
+                        backgroundVideoLoaderTask.execute(Pair.create(fileUri, videoOptions));
+                        playVideo();
+                    }
                 }
-                playVideo();
                 break;
 
             case "stop":
                 stopVideo();
+                mVrVideoView.seekTo(0);
+                finish();
                 break;
 
-            case "cmd":
-                if (DBG) {
-                    Log.i(TAG, "check - executeCommand");
-                }
-                if (arr[PROTOCOL_MSG_SCORE] != null) {
-                    int score = Integer.parseInt(arr[PROTOCOL_MSG_SCORE]);
-                    setScore(score);
-                }
-                if (arr[PROTOCOL_MSG_SPEED] != null) {
-                    double speed = Double.parseDouble((arr[PROTOCOL_MSG_SPEED]));
-                    setSpeed(speed);
-                }
+            case "gamerun":
+                //Is this game playing?
+                if(isPlaying == 1) {
+                    //Speed
+                    if (arr[PROTOCOL_MSG_SPEED] != null) {
+                        speed = Double.parseDouble((arr[PROTOCOL_MSG_SPEED]));
+                        //speed가 기존과 다른 경우만 전송
+                        if (preSpeed != speed) {
+                            if(DBG){Log.i(TAG, "chekc - prespeed" + preSpeed);}
+                            if(DBG){Log.i(TAG, "chekc - speed" + speed);}
+                            preSpeed = speed;
+                            setSpeed(speed);
+                        }
+                    }
 
+
+                    //score 계산을 위해서 arr. 던져주고 감점되는 값을 받아옴
+                    //getPenalty는 도민이가 정의한 class의 임시명
+//                    setScore(getPenalty(arr, mVrVideoView.getCurrentPosition()));
+                }
                 break;
         }
     }
 
     protected void setVideo(int video) {
-        SELECTED_VIDEO = video;
+        selectedVideo = video;
     }
 
     protected String getVideo() {
         String videoName = null;
-        switch (SELECTED_VIDEO) {
+        switch (selectedVideo) {
             case 1:
                 videoName = "car.mp4";
                 break;
@@ -298,6 +320,11 @@ public class VrVideoActivity extends Activity {
 
     //set speed factor(multiplication of 1000 to make factor as millisecond)
     private void setSpeed(double speed) {
+        //0.5가 기본 속도 (0.5배 느림)
+        //1이 정상 속도
+        //1.5가 빠른 속도 (1.5배 빠름
+        //상기 속도에 맞춰서 speed 조절이 필요함
+
 //        if (speed > 0) { // 입력값이 양수
         if (mSpeed >= 0) { // 기존값이 없거나, 있었다고 하면 Default + (speed - 0.1)
             mSpeed = (DEFAULT_SPEED + (speed - 0.1));
@@ -319,23 +346,13 @@ public class VrVideoActivity extends Activity {
     }
 
     //set score
-    private void setScore(int i) {
-        score = i;
+    private void setScore(int penalty) {
+        score += penalty;
     }
 
     //get current score
     public int getScore() {
         return score;
-    }
-
-    //set turn factor
-    private void setTurn(int i) {
-        turn = i;
-    }
-
-    //get current turn factor
-    public int getTurn() {
-        return turn;
     }
 
     @Override
@@ -533,12 +550,30 @@ public class VrVideoActivity extends Activity {
         //change onNewFrame for play speed control with speed factor from bluetooth
         public void onNewFrame() {
             if (!isPaused) {
+
+                //1초에 15번 정도 호출됨
+                //0.5배면 7.5 번 정도를 느리게 호출하고
+                //1.5배면 7.5번 정도를 빠르게 호출하면 될 듯
+                //1000에 15번이면 한 번 onNewFrame에 66 정도의 시간을 소요한다
+
+                //0.5배의 경우 videoPosition -= 30;로 current 시간에서 0~60 사이의 값을 마이너스
+                //1배는 seekTo 실행 없이 진행
+                //1.5배는 0.5배일 때 마이너스 해주는 value 계산해서 동일한 값을 더해주면 된다
+
+                //1초에 onNewFrame이 15번 실행되니 onNewFrame 한 번 실행동안
+                // 데이터가 과거로 가지않을 0~60 값 사이의 value를 15번 중에 몇 번을 빼줄지 결정해서
+                //TIME_THRESHOLD_FRAME_UPDATE 값을 결정한다 (30정도가 적당하지 않을까?)
+
+//                mCurrCount = (int)videoPosition/TIME_THRESHOLD_FRAME_UPDATE;
+//                if (((mCurrCount-mPrevCount) > 0)) {
                 long speed = (long) getSpeedToMilliSecond();
                 long videoPosition = mVrVideoView.getCurrentPosition();
                 if (speed != 0) {
                     videoPosition += speed;
                     mVrVideoView.seekTo(videoPosition);
                 }
+//                }
+//                mPrevCount = mCurrCount;
             }
         }
 
@@ -579,8 +614,11 @@ public class VrVideoActivity extends Activity {
                 options.inputType = Options.TYPE_MONO;
                 videoOptions = options;
                 //bluetooth에서 select한 video를 가져온다
-                String videoName = getVideo();
-                videoUri = Uri.parse(videoName);
+//                String videoName = getVideo();
+//                videoUri = Uri.parse(videoName);
+
+                //test 용 uri
+                videoUri = Uri.parse(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MOVIES).getAbsolutePath() + File.separator + "car.mp4");
 
                 result = true;
             } else {
@@ -611,7 +649,8 @@ public class VrVideoActivity extends Activity {
                     if (DBG) {
                         Log.i(TAG, "check - onPostexecute");
                     }
-                    mVrVideoView.loadVideoFromAsset(videoName, videoOptions);
+//                    mVrVideoView.loadVideoFromAsset(videoName, videoOptions);
+                    mVrVideoView.loadVideo(videoUri, videoOptions);
                     Log.d(TAG, "### loadVideoFromAsset()");
                 } else {
                     mVrVideoView.loadVideo(videoUri, videoOptions);

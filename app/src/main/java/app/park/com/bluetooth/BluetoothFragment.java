@@ -170,7 +170,7 @@ public class BluetoothFragment extends Fragment {
                         break;
                     case Constants.MESSAGE_READ:
                         if (msg.equals("play")) {
-                            Toast.makeText(getActivity(), "play", Toast.LENGTH_SHORT).show();
+//                            Toast.makeText(getActivity(), "play", Toast.LENGTH_SHORT).show();
                             startVideoView();
                         } else if (msg.equals("pause")) {
                             Toast.makeText(getActivity(), "pause", Toast.LENGTH_SHORT).show();

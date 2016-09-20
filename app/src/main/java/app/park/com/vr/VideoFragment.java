@@ -12,16 +12,18 @@ import android.widget.LinearLayout;
 
 import app.park.com.R;
 import app.park.com.bluetooth.BluetoothService;
+import app.park.com.bluetooth.Protocol;
 import app.park.com.control.ControlActivity;
 
 public class VideoFragment extends Fragment {
     public static final String TAG = VideoFragment.class.getSimpleName();
-    public static final boolean DBG = true;
+    public static final boolean DBG = false;
 
     // Layout Views
     private LinearLayout mVideoBtn;
-    private Button mPlayButton;
-    private Button mPauseButton;
+    private Button mButtonVideo1;
+    private Button mButtonVideo2;
+    private Button mButtonVideo3;
     private BluetoothService mBluetoothService;
 
     @Override
@@ -38,32 +40,17 @@ public class VideoFragment extends Fragment {
 
     @Override
     public void onViewCreated(View view, Bundle savedInstanceState) {
-        mVideoBtn = (LinearLayout) view.findViewById(R.id.btn_video);
-        mPlayButton = (Button) view.findViewById(R.id.btn_play);
-        mPauseButton = (Button) view.findViewById(R.id.btn_pause);
+        mVideoBtn = (LinearLayout) view.findViewById(R.id.btn_video_group);
+        mButtonVideo1 = (Button) view.findViewById(R.id.btn_play1);
+        mButtonVideo2 = (Button) view.findViewById(R.id.btn_play2);
+        mButtonVideo3 = (Button) view.findViewById(R.id.btn_play3);
     }
 
     @Override
     public void onStart() {
         super.onStart();
         mBluetoothService = BluetoothService.getInstance();
-        mPlayButton.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) {
-                String message = "play";
-                mBluetoothService.sendMessage(message);
-                Intent intent = new Intent(getActivity(), ControlActivity.class);
-                startActivity(intent);
-            }
-        });
-
-        mPauseButton.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) {
-                String message = "puase";
-                mBluetoothService.sendMessage(message);
-            }
-        });
-        mPlayButton.setEnabled(false);
-        mPauseButton.setEnabled(false);
+        initButton();
     }
 
     @Override
@@ -76,6 +63,33 @@ public class VideoFragment extends Fragment {
         super.onDestroy();
     }
 
+    private void initButton() {
+        mButtonVideo1.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                String message = Protocol.CMD_PLAY+Protocol.SEPARATOR+"1";
+                mBluetoothService.sendMessage(message);
+                startContorlView();
+            }
+        });
+
+        mButtonVideo2.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                String message = Protocol.CMD_PLAY+Protocol.SEPARATOR+"2";
+                mBluetoothService.sendMessage(message);
+                startContorlView();
+            }
+        });
+
+        mButtonVideo3.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                String message = Protocol.CMD_PLAY+Protocol.SEPARATOR+"3";
+                mBluetoothService.sendMessage(message);
+                startContorlView();
+            }
+        });
+        disableButton();
+    }
+
     public void setButtonVisible() {
         mVideoBtn.setVisibility(View.VISIBLE);
     }
@@ -85,12 +99,19 @@ public class VideoFragment extends Fragment {
     }
 
     public void enableButton() {
-        mPlayButton.setEnabled(true);
-        mPauseButton.setEnabled(true);
+        mButtonVideo1.setEnabled(true);
+        mButtonVideo2.setEnabled(true);
+        mButtonVideo3.setEnabled(true);
     }
 
     public void disableButton() {
-        mPlayButton.setEnabled(false);
-        mPauseButton.setEnabled(false);
+        mButtonVideo1.setEnabled(false);
+        mButtonVideo2.setEnabled(false);
+        mButtonVideo3.setEnabled(false);
+    }
+
+    public void startContorlView() {
+        Intent intent = new Intent(getActivity(), ControlActivity.class);
+        startActivity(intent);
     }
 }

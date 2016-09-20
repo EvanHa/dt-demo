@@ -1,22 +1,36 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/btn_video"
+    android:id="@+id/btn_video_group"
+    android:padding="@dimen/button_padding"
     android:orientation="horizontal"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
     <Button
-        android:id="@+id/btn_play"
+        android:id="@+id/btn_play1"
+        android:layout_gravity="center_vertical|center_horizontal"
+        android:paddingTop="@dimen/button_pading_top"
         android:layout_weight="1"
         android:layout_width="0dp"
         android:layout_height="@dimen/button_height"
-        android:text="@string/btn_play"/>
+        android:text="@string/btn_play1"/>
 
     <Button
-        android:id="@+id/btn_pause"
+        android:id="@+id/btn_play2"
+        android:layout_gravity="center_vertical|center_horizontal"
+        android:paddingTop="@dimen/button_pading_top"
         android:layout_weight="1"
         android:layout_width="0dp"
         android:layout_height="@dimen/button_height"
-        android:text="@string/btn_pause"/>
+        android:text="@string/btn_play2"/>
+
+    <Button
+        android:id="@+id/btn_play3"
+        android:layout_gravity="center_vertical|center_horizontal"
+        android:paddingTop="@dimen/button_pading_top"
+        android:layout_weight="1"
+        android:layout_width="0dp"
+        android:layout_height="@dimen/button_height"
+        android:text="@string/btn_play3"/>
 
 </LinearLayout>
