@@ -185,7 +185,7 @@ public class VrVideoActivity extends Activity {
             backgroundVideoLoaderTask.cancel(true);
         }
         //영상 시작 guide message
-        Toast.makeText(getApplicationContext(), "Contorller에서 Accel을 누르면 영상이 시작됩니다.", Toast.LENGTH_LONG).show();
+        Toast.makeText(getApplicationContext(), R.string.info_msg_select_video, Toast.LENGTH_LONG).show();
     }
 
     @Override
@@ -207,6 +207,7 @@ public class VrVideoActivity extends Activity {
                                 break;
                             case Constants.BLUETOOTH_NONE:
                                 Toast.makeText(getApplicationContext(), "BT DISCONNECT!!!", Toast.LENGTH_SHORT).show();
+                                finish();
                                 break;
                         }
                         break;

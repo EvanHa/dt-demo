@@ -43,4 +43,5 @@
     <string name="radio_controller">Controller</string>
     <string name="radio_viewer">Viewer</string>
 
+    <string name="info_msg_select_video">Controller에서 재생하고싶은 비디오를 선택하세요.</string>
 </resources>
