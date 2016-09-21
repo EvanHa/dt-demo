@@ -52,6 +52,9 @@ public class MainActivity extends ActivityBase implements RadioGroup.OnCheckedCh
     @Override
     protected void onResume() {
         super.onResume();
+        if (mBluetoothFragment.isBluetoothConnected()) {
+            updateUi(Constants.MESSAGE_BT_CONNECTED);
+        }
     }
 
     @Override
@@ -64,9 +67,6 @@ public class MainActivity extends ActivityBase implements RadioGroup.OnCheckedCh
                 }
                 mDeviceRole = ROLE_CONTROLLER;
                 mVideoFragment.setButtonVisible();
-                if (mBluetoothFragment.isBluetoothConnected()) {
-                    updateUi(Constants.MESSAGE_BT_CONNECTED);
-                }
                 break;
             case R.id.radio_viewer:
                 if (DBG) {
@@ -75,6 +75,9 @@ public class MainActivity extends ActivityBase implements RadioGroup.OnCheckedCh
                 mDeviceRole = ROLE_VIEWER;
                 mVideoFragment.setButtonInVisible();
                 break;
+        }
+        if (mBluetoothFragment.isBluetoothConnected()) {
+            updateUi(Constants.MESSAGE_BT_CONNECTED);
         }
     }
 
@@ -90,9 +93,6 @@ public class MainActivity extends ActivityBase implements RadioGroup.OnCheckedCh
                 if (mDeviceRole == MainActivity.ROLE_CONTROLLER) {
                     mVideoFragment.enableButton();
                 } else { // Device role is viewer
-                    if (DBG) {
-                        Log.d(TAG, "Device role is viewer");
-                    }
                     mMainInstatnce.startVideoView();
                 }
                 break;
