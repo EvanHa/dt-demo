@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import app.park.com.MainActivity;
 import app.park.com.R;
 import app.park.com.bluetooth.BluetoothHandler;
 import app.park.com.bluetooth.BluetoothService;
@@ -13,6 +14,7 @@ import app.park.com.bluetooth.Constants;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
@@ -22,12 +24,19 @@ import android.os.Handler;
 import android.support.v4.view.GestureDetectorCompat;
 import android.util.Log;
 import android.view.GestureDetector;
+import android.view.Gravity;
+import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnTouchListener;
+import android.view.WindowManager;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.PopupWindow;
 import android.widget.Toast;
+
+import static app.park.com.R.layout.popup;
 
 public class ControlActivity extends Activity implements SensorEventListener,
 		GestureDetector.OnGestureListener {
@@ -47,8 +56,6 @@ public class ControlActivity extends Activity implements SensorEventListener,
 	private BluetoothHandler.ActivityCb mActivityCb = null;
 
 	boolean isFirstAccleated = false;
-
-	boolean doubleBackToExitPressedOnce = false;
 
 	ImageView turn_stick;
 	ImageView btnAcc;
@@ -303,45 +310,58 @@ public class ControlActivity extends Activity implements SensorEventListener,
 						y2 = event.getY();
 						float deltaX = y2 - y1;
 
-						// 우회전 깜빡이 켬
+						// 0=좌 신호, 1=중립, 2=우 신호
+						// 위로 스와이프
 						if (deltaX < MIN_DISTANCE) {
-							TURN_SIGNAL_STATUS = 2;
-							turn_stick.setScaleType(ImageView.ScaleType.FIT_START);
-//							Log.d(TAG, "swipe to turn right");
+							// 좌 신호였으면 중립으로
+							if(TURN_SIGNAL_STATUS==0) {
+								TURN_SIGNAL_STATUS = 1;
+							}
+							// 중립이었으면 우 신호로
+							else if(TURN_SIGNAL_STATUS==1) {
+								TURN_SIGNAL_STATUS = 2;
+							}
 
 							// 40~42초 사이에 수행했으면 task5 변수에 true값 저장
-							if(40 <=seconds && seconds <=42) {
-								scenarioTask5 = true;
+//							if(40 <=seconds && seconds <=42) {
+//								scenarioTask5 = true;
 //								Log.d(TAG, "우회전 깜빡이 함");
-							}
+//							}
 
-							// 좌회전 깜빡이 켬
+						// 아래로 스와이프
 						} else if (deltaX > MIN_DISTANCE) {
-							TURN_SIGNAL_STATUS = 1;
-							turn_stick.setScaleType(ImageView.ScaleType.FIT_END);
-
-//							Log.d(TAG, "swipe to turn left");
+							// 우 신호였으면 중립으로
+							if(TURN_SIGNAL_STATUS==2) {
+								TURN_SIGNAL_STATUS = 1;
+							}
+							// 중립이었으면 좌 신호로
+							else if(TURN_SIGNAL_STATUS==1) {
+								TURN_SIGNAL_STATUS = 0;
+							}
 
 							// 30~32초 사이에 수행했으면 task5 변수에 true값 저장
-							if(30 <=seconds && seconds <=32) {
-								scenarioTask4 = true;
+//							if(30 <=seconds && seconds <=32) {
+//								scenarioTask4 = true;
 //								Log.d(TAG, "좌회전 깜빡이 함");
-							}
+//							}
 						}
 
-//						turnSignalTimer = new Timer();
-//						turnSignalTimer.scheduleAtFixedRate(new TimerTask() {
-//							public void run() {
-//								sendMessage("XXX", STATUS_GAMERUN);
-//							}
-//						}, 0, 1000);
+						// 이전 상태값과 다르면 전송
+						if(TURN_SIGNAL_STATUS != TURN_SIGNAL_STATUS2) {
+							TURN_SIGNAL_STATUS2 = TURN_SIGNAL_STATUS;
+							sendMessage("깜빡이 상태변경", STATUS_GAMERUN);
+						}
 
+						// 깜빡이 그림 위치바꿈
+						if(TURN_SIGNAL_STATUS==2) {
+							turn_stick.setScaleType(ImageView.ScaleType.FIT_START);
+						}else if(TURN_SIGNAL_STATUS==1) {
+							turn_stick.setScaleType(ImageView.ScaleType.CENTER_INSIDE);
+						}else if(TURN_SIGNAL_STATUS==0) {
+							turn_stick.setScaleType(ImageView.ScaleType.FIT_END);
+						}
 						break;
 				}
-//				if(TURN_SIGNAL_STATUS != TURN_SIGNAL_STATUS2) {
-//					sendMessage("XXX", STATUS_GAMERUN);
-//					TURN_SIGNAL_STATUS2 = TURN_SIGNAL_STATUS;
-//				}
 				return true;
 			}
 		});
@@ -358,16 +378,21 @@ public class ControlActivity extends Activity implements SensorEventListener,
 				// 눌렀을때
 				if (event.getAction() == MotionEvent.ACTION_DOWN) {
 					ACC_STATUS = 1;
-					sendMessage("엑셀누름", STATUS_GAMERUN);
+
+					// 이전 상태값과 다르면 전송
+					if(ACC_STATUS != ACC_STATUS2) {
+						ACC_STATUS2 = 1;
+						sendMessage("엑셀누름", STATUS_GAMERUN);
+					}
 
 					// 엑셀 누름 변수 = true
 					isAccPressed = true;
 
 					// 10~12초 사이에 엑셀 눌러야함
-					if(10 <= seconds && seconds <= 12) {
-						scenarioTask1 = true;
+//					if(10 <= seconds && seconds <= 12) {
+//						scenarioTask1 = true;
 //						Log.d(TAG, "엑셀 누름");
-					}
+//					}
 
 					// 엑셀 눌려있는 시간 체크
 					timer = new Timer();
@@ -384,19 +409,18 @@ public class ControlActivity extends Activity implements SensorEventListener,
 						public void run() {
 							// 1초 이상 눌려있었으면
 //							if(btnAccElapsedTime >= 1) {
-								// 처음 액셀 눌렀으면 재생 신호 보내줌
+								// 처음 액셀 눌렀으면 isFirstAccleated 변수 = true
 								if(!isFirstAccleated) {
-									mBluetoothService.sendMessage("play////1");
+//									mBluetoothService.sendMessage("play////1");
 //									Log.d(TAG, "isFirstAccleated!!!!       play////1");
 									isFirstAccleated = true;
 								}
 
 
-
 							accTimer = new Timer();
 							accTimer.scheduleAtFixedRate(new TimerTask() {
 								public void run() {
-									sendMessage("엑셀 1초당", STATUS_GAMERUN);
+//									sendMessage("엑셀 1초당", STATUS_GAMERUN);
 								}
 							}, 0, 1000);
 
@@ -411,7 +435,7 @@ public class ControlActivity extends Activity implements SensorEventListener,
 //									Log.d(TAG, "최대속도 제한 1.5");
 //								}
 
-								sendMessage("엑셀 속도 증가시", STATUS_GAMERUN);
+//								sendMessage("엑셀 속도 증가시", STATUS_GAMERUN);
 //								mBluetoothService.sendMessage("gamerun////" + velocity.doubleValue() + "////" + score);
 //								Log.d(TAG, "gamerun////" + velocity + "////" + score);
 							}
@@ -423,7 +447,12 @@ public class ControlActivity extends Activity implements SensorEventListener,
 					// 엑셀 뗐을 때
 				} else if (event.getAction() == MotionEvent.ACTION_UP) {
 					ACC_STATUS = 0;
-					sendMessage("엑셀 뗌", STATUS_GAMERUN);
+
+					// 이전 상태값과 다르면 전송
+					if(ACC_STATUS != ACC_STATUS2) {
+						ACC_STATUS2 = 0;
+						sendMessage("엑셀 뗌", STATUS_GAMERUN);
+					}
 
 					// 엑셀 누름 변수 = false
 					isAccPressed = false;
@@ -476,7 +505,12 @@ public class ControlActivity extends Activity implements SensorEventListener,
 				// 눌렀을때
 				if (event.getAction() == MotionEvent.ACTION_DOWN) {
 					BRAKE_STATUS = 1;
-					sendMessage("브레이크 누름", STATUS_GAMERUN);
+
+					// 이전 상태값과 다르면 전송
+					if(BRAKE_STATUS != BRAKE_STATUS2) {
+						BRAKE_STATUS2 = 1;
+						sendMessage("브레이크 누름", STATUS_GAMERUN);
+					}
 
 					isBreakPressed = true;
 
@@ -486,7 +520,7 @@ public class ControlActivity extends Activity implements SensorEventListener,
 					brakeTimer = new Timer();
 					brakeTimer.scheduleAtFixedRate(new TimerTask() {
 						public void run() {
-							sendMessage("브레이크 1초당", STATUS_GAMERUN);
+//							sendMessage("브레이크 1초당", STATUS_GAMERUN);
 						}
 					}, 0, 1000);
 
@@ -501,10 +535,10 @@ public class ControlActivity extends Activity implements SensorEventListener,
 					}, 0, 1000);
 
 					// 20~22초 사이에 브레이크 눌러야함
-					if(20 <= seconds && seconds <= 22) {
-						scenarioTask2 = true;
-//						Log.d(TAG, "브레이크 잘 누름");
-					}
+//					if(20 <= seconds && seconds <= 22) {
+//						scenarioTask2 = true;
+////						Log.d(TAG, "브레이크 잘 누름");
+//					}
 
 					// 속도 감소 타이머 시작
 					timer3 = new Timer();
@@ -531,7 +565,12 @@ public class ControlActivity extends Activity implements SensorEventListener,
 					// 뗐을 때
 				} else if (event.getAction() == MotionEvent.ACTION_UP) {
 					BRAKE_STATUS = 0;
-					sendMessage("브레이크 똄", STATUS_GAMERUN);
+
+					// 이전 상태값과 다르면 전송
+					if(BRAKE_STATUS != BRAKE_STATUS2) {
+						BRAKE_STATUS2 = 0;
+						sendMessage("브레이크 똄", STATUS_GAMERUN);
+					}
 
 					// 브레이크 누름 변수 = false
 					isBreakPressed = false;
@@ -594,66 +633,70 @@ public class ControlActivity extends Activity implements SensorEventListener,
 				// roll 각도가 -90도, -30도 사이에 있으면 좌회전
 				if(-90 < roll1 && roll1 < -30) {
 					HANDLE_STATUS = 1;
-//					sendMessage("핸들 좌회전", STATUS_GAMERUN);
 
-					// 30~32초 사이에 좌회전 했으면 task3 변수 = true
-					if(30 <=seconds && seconds <=32) {
-						scenarioTask3 = true;
-//						Log.d(TAG, "좌회전 함");
+					// 이전 상태값과 다르면 전송
+					if(HANDLE_STATUS != HANDLE_STATUS2) {
+						HANDLE_STATUS2 = 1;
+						sendMessage("핸들 좌회전", STATUS_GAMERUN);
 					}
+					// 30~32초 사이에 좌회전 했으면 task3 변수 = true
+//					if(30 <=seconds && seconds <=32) {
+//						scenarioTask3 = true;
+////						Log.d(TAG, "좌회전 함");
+//					}
 
 					// 50~52초 사이에 좌회전 했으면 task3 변수 = false
-					if(50 <=seconds && seconds <=52) {
-						scenarioTask7 = false;
-//						Log.d(TAG, "좌회전하면 안됨");
-					}
-
-					// 깜빡이 그림위치 원래대로
-					turn_stick.setScaleType(ImageView.ScaleType.CENTER_INSIDE);
+//					if(50 <=seconds && seconds <=52) {
+//						scenarioTask7 = false;
+////						Log.d(TAG, "좌회전하면 안됨");
+//					}
 				}
 
 				// roll 각도가 30도, 90도 사이에 있으면 우회전
-				if(30 < roll1 && roll1 < 90) {
+				else if(30 < roll1 && roll1 < 90) {
 					HANDLE_STATUS = 2;
-//					sendMessage("핸들 우회전", STATUS_GAMERUN);
+
+					// 이전 상태값과 다르면 전송
+					if(HANDLE_STATUS != HANDLE_STATUS2) {
+						HANDLE_STATUS2 = 2;
+						sendMessage("핸들 우회전", STATUS_GAMERUN);
+					}
 
 					// 40~42초 사이에 우회전 했으면 task5 변수 = true
-					if(40 <=seconds && seconds <=42) {
-						scenarioTask5 = true;
-//						Log.d(TAG, "우회전 함");
-					}
+//					if(40 <=seconds && seconds <=42) {
+//						scenarioTask5 = true;
+////						Log.d(TAG, "우회전 함");
+//					}
 
 					// 50~52초 사이에 우회전 했으면 task7 변수 = false
-					if(50 <=seconds && seconds <=52) {
-						scenarioTask7 = false;
-//						Log.d(TAG, "우회전하면 안됨");
-					}
-
-					// 깜빡이 그림위치 원래대로
-					turn_stick.setScaleType(ImageView.ScaleType.CENTER_INSIDE);
+//					if(50 <=seconds && seconds <=52) {
+//						scenarioTask7 = false;
+////						Log.d(TAG, "우회전하면 안됨");
+//					}
 				}
 
 				// roll 각도가 -30도, 30도 사이에 있으면 직진
-				if(-30 <= roll1 && roll1 <= 30) {
+				else if(-30 <= roll1 && roll1 <= 30) {
 					HANDLE_STATUS = 0;
-//					sendMessage("핸들 직진", STATUS_GAMERUN);
+
+					// 이전 상태값과 다르면 전송
+					if(HANDLE_STATUS != HANDLE_STATUS2) {
+						HANDLE_STATUS2 = 0;
+						sendMessage("핸들 직진", STATUS_GAMERUN);
+
+						// 좌, 우회전이었다가 직진이면 깜빡이 중립으로
+						TURN_SIGNAL_STATUS = 1;
+						turn_stick.setScaleType(ImageView.ScaleType.CENTER_INSIDE);
+					}
 
 					// 50~52초 사이에 직진 했으면 task7 변수 = true
-					if(scenarioTask7) {
-						if(50 <=seconds && seconds <=52) {
-							scenarioTask7 = true;
-//							Log.d(TAG, "직진 함");
-						}
-					}
-				}
-
-
-//				handleTimer = new Timer();
-//				handleTimer.scheduleAtFixedRate(new TimerTask() {
-//					public void run() {
-//						sendMessage("XXX", STATUS_GAMERUN);
+//					if(scenarioTask7) {
+//						if(50 <=seconds && seconds <=52) {
+//							scenarioTask7 = true;
+////							Log.d(TAG, "직진 함");
+//						}
 //					}
-//				}, 0, 1000);
+				}
 			}
 		}
 	}
@@ -741,33 +784,55 @@ public class ControlActivity extends Activity implements SensorEventListener,
 
 	@Override
 	public void onBackPressed() {
-		if (doubleBackToExitPressedOnce) {
-			super.onBackPressed();
-			return;
-		}
 
-		this.doubleBackToExitPressedOnce = true;
-		Toast.makeText(this, "Please click BACK again to exit", Toast.LENGTH_SHORT).show();
+		LayoutInflater layoutInflater
+				= (LayoutInflater) getBaseContext()
+				.getSystemService(LAYOUT_INFLATER_SERVICE);
+		final View popupView = layoutInflater.inflate(popup, null);
+		final PopupWindow popupWindow = new PopupWindow(
+				popupView,
+				WindowManager.LayoutParams.WRAP_CONTENT,
+				WindowManager.LayoutParams.WRAP_CONTENT);
+		// PopupWindow 위에서 Button의 Click이 가능하도록 setTouchable(true);
+		popupWindow.setTouchable(true);
+		// PopupWindow 상의 View의 Button 연결
+		Button btnYes = (Button) popupView.findViewById(R.id.btn_yes);
+		Button btnNo = (Button) popupView.findViewById(R.id.btn_no);
 
-		new Handler().postDelayed(new Runnable() {
+		popupWindow.showAtLocation(this.getWindow().getDecorView(), Gravity.CENTER, 0, 0);
 
+		btnYes.setOnClickListener(new Button.OnClickListener(
+
+		) {
 			@Override
-			public void run() {
-				/*
-				백키를 한번 누르고 2초 이내에 한번 더 눌렀으면
-				stop 메시지 보내고 초기화
-				 */
-				doubleBackToExitPressedOnce = false;
-				mBluetoothService.sendMessage("stop////1");
-				init();
-//				Log.d(TAG, "stop////1");
+			public void onClick(View view) {
+				Intent intent = new Intent(getApplicationContext(), MainActivity.class);
+				startActivity(intent);
 			}
-		}, 2000);
+		});
+
+		btnNo.setOnClickListener(new View.OnClickListener() {
+			@Override
+			public void onClick(View view) {
+				popupWindow.dismiss();
+			}
+		});
 	}
 
 	public void sendMessage(String log, String cmd) {
 
-		// cmd////velocity////handle[0,1,2]////깜빡이[0,1,2]////엑셀[0,1]////브레이크[0,1]
+		/*
+			cmd////velocity////handle[0,1,2]////깜빡이[0,1,2]////엑셀[0,1]////브레이크[0,1]
+
+			handle
+			0=직진, 1=좌회전, 2=우회전
+
+			깜빡이
+			0=좌 신호, 1=중립, 2=우 신호
+
+			엑셀, 브레이크
+			0=안누름, 1=누름
+		 */
 		mBluetoothService.sendMessage(cmd + BLUETHOOTH_MESSAGE_SEPARATOR +
 				velocity + BLUETHOOTH_MESSAGE_SEPARATOR +
 				HANDLE_STATUS  + BLUETHOOTH_MESSAGE_SEPARATOR +
