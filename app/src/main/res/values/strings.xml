@@ -43,4 +43,5 @@
     <string name="radio_controller">Controller</string>
     <string name="radio_viewer">Viewer</string>
 
+    <string name="info_msg_select_video">Please select video you want to play on the controller</string>
 </resources>

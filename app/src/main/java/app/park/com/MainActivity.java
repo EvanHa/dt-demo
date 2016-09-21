@@ -54,7 +54,19 @@ public class MainActivity extends ActivityBase implements RadioGroup.OnCheckedCh
         super.onResume();
         if (mBluetoothFragment.isBluetoothConnected()) {
             updateUi(Constants.MESSAGE_BT_CONNECTED);
+        } else {
+            updateUi(Constants.MESSAGE_BT_DISCONNECTED);
         }
+    }
+
+    @Override
+    protected void onRestoreInstanceState(Bundle savedInstanceState) {
+        super.onRestoreInstanceState(savedInstanceState);
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
     }
 
     @Override
@@ -101,6 +113,7 @@ public class MainActivity extends ActivityBase implements RadioGroup.OnCheckedCh
                 mVideoFragment.disableButton();
                 break;
         }
+        mBluetoothFragment.updateStatus();
     }
 
     public void startVideoView() {

@@ -23,6 +23,7 @@ import android.bluetooth.BluetoothDevice;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.annotation.RequiresPermission;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.util.Log;
@@ -172,16 +173,13 @@ public class BluetoothFragment extends Fragment {
                         }
                         break;
                     case Constants.MESSAGE_READ:
-                        if (msg.equals("play")) {
-//                            Toast.makeText(getActivity(), "play", Toast.LENGTH_SHORT).show();
-                            startVideoView();
-                        } else if (msg.equals("pause")) {
-                            Toast.makeText(getActivity(), "pause", Toast.LENGTH_SHORT).show();
+                        if (DBG) {
+                            Log.i(TAG, "[read]" + msg);
                         }
                         break;
                     case Constants.MESSAGE_WRITE:
                         if (DBG) {
-                            Log.i(TAG, msg);
+                            Log.i(TAG, "[write]" + msg);
                         }
                         break;
                     case Constants.MESSAGE_DEVICE_NAME:
@@ -208,26 +206,6 @@ public class BluetoothFragment extends Fragment {
             startActivity(discoverableIntent);
         } else {
             Log.w(TAG, "Already set to ensure discoverable");
-        }
-    }
-
-    /**
-     * Sends a message.
-     *
-     * @param message A string of text to send.
-     */
-    public void sendMessage(String message) {
-        // Check that we're actually connected before trying anything
-        if (mBluetoothService.getState() != BluetoothService.STATE_CONNECTED) {
-            Toast.makeText(getActivity(), R.string.not_connected, Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-        // Check that there's actually something to send
-        if (message.length() > 0) {
-            // Get the message bytes and tell the BluetoothService to write
-            byte[] send = message.getBytes();
-            mBluetoothService.write(send);
         }
     }
 
@@ -307,16 +285,28 @@ public class BluetoothFragment extends Fragment {
         mBluetoothService.connect(device, secure);
     }
 
-    public void startVideoView() {
-        Intent intent = new Intent(getActivity() , VrVideoActivity.class);
-        startActivity(intent);
-    }
-
     public boolean isBluetoothConnected() {
         boolean result = false;
         if (mBluetoothService.getState() == BluetoothService.STATE_CONNECTED) {
             result = true;
         }
         return result;
+    }
+
+    public void updateStatus() {
+        int state = mBluetoothService.getState();
+        switch (state) {
+            case BluetoothService.STATE_CONNECTED:
+                setStatus(getString(R.string.title_connected_to, mConnectedDeviceName));
+                break;
+            case BluetoothService.STATE_CONNECTING:
+                setStatus(R.string.title_connecting);
+                break;
+            case BluetoothService.STATE_LISTEN:
+            case BluetoothService.STATE_NONE:
+                setStatus(R.string.title_not_connected);
+                break;
+            default:
+        }
     }
 }
