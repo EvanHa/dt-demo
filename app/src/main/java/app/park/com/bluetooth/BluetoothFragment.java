@@ -292,4 +292,21 @@ public class BluetoothFragment extends Fragment {
         }
         return result;
     }
+
+    public void updateStatus() {
+        int state = mBluetoothService.getState();
+        switch (state) {
+            case BluetoothService.STATE_CONNECTED:
+                setStatus(getString(R.string.title_connected_to, mConnectedDeviceName));
+                break;
+            case BluetoothService.STATE_CONNECTING:
+                setStatus(R.string.title_connecting);
+                break;
+            case BluetoothService.STATE_LISTEN:
+            case BluetoothService.STATE_NONE:
+                setStatus(R.string.title_not_connected);
+                break;
+            default:
+        }
+    }
 }
