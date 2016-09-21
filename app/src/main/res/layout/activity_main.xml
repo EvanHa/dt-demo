@@ -28,12 +28,6 @@
                 style="@style/Widget.Message"
                 android:text="@string/intro_message" />
         </ScrollView>
-
-        <fragment
-            android:name="app.park.com.common.logger.LogFragment"
-            android:id="@+id/log_fragment"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent" />
     </ViewAnimator>
 
     <View
