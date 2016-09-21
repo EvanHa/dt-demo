@@ -32,6 +32,7 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.Toast;
 
+import app.park.com.MainActivity;
 import app.park.com.R;
 import app.park.com.vr.VrVideoActivity;
 
@@ -159,12 +160,14 @@ public class BluetoothFragment extends Fragment {
                         switch (msg) {
                             case Constants.BLUETOOTH_CONNECTED:
                                 setStatus(getString(R.string.title_connected_to, mConnectedDeviceName));
+                                MainActivity.updateUi(Constants.MESSAGE_BT_CONNECTED);
                                 break;
                             case Constants.BLUETOOTH_CONNECTING:
                                 setStatus(R.string.title_connecting);
                                 break;
                             case Constants.BLUETOOTH_NONE:
                                 setStatus(R.string.title_not_connected);
+                                MainActivity.updateUi(Constants.MESSAGE_BT_DISCONNECTED);
                                 break;
                         }
                         break;

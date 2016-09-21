@@ -39,7 +39,6 @@ public class BluetoothHandler extends Handler {
                         if (mActivityCb != null) {
                             mActivityCb.sendCbMessage(Constants.MESSAGE_STATE_CHANGE, Constants.BLUETOOTH_CONNECTED);
                         }
-                        MainActivity.updateUi(Constants.MESSAGE_BT_CONNECTED);
                         break;
                     case BluetoothService.STATE_CONNECTING:
                         if (mActivityCb != null) {
@@ -51,7 +50,6 @@ public class BluetoothHandler extends Handler {
                         if (mActivityCb != null) {
                             mActivityCb.sendCbMessage(Constants.MESSAGE_STATE_CHANGE, Constants.BLUETOOTH_NONE);
                         }
-                        MainActivity.updateUi(Constants.MESSAGE_BT_DISCONNECTED);
                         break;
                 }
                 break;

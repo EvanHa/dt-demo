@@ -1,5 +1,6 @@
 package app.park.com;
 
+import android.content.Intent;
 import android.support.v4.app.FragmentTransaction;
 import android.os.Bundle;
 import android.util.Log;
@@ -8,6 +9,7 @@ import app.park.com.bluetooth.BluetoothFragment;
 import app.park.com.bluetooth.Constants;
 import app.park.com.common.activities.ActivityBase;
 import app.park.com.vr.VideoFragment;
+import app.park.com.vr.VrVideoActivity;
 
 public class MainActivity extends ActivityBase implements RadioGroup.OnCheckedChangeListener {
     public static final String TAG = MainActivity.class.getSimpleName();
@@ -16,10 +18,11 @@ public class MainActivity extends ActivityBase implements RadioGroup.OnCheckedCh
     public static final int ROLE_CONTROLLER = 1;
     public static final int ROLE_VIEWER = 2;
 
-    public static BluetoothFragment mBluetoothFragment; // Bluetooth Control button
-    public static VideoFragment mVideoFragment; // Video Button
-    public static int mDeviceRole; // Device Role (Controller or Viewer)
+    private static BluetoothFragment mBluetoothFragment; // Bluetooth Control button
+    private static VideoFragment mVideoFragment; // Video Button
+    private static int mDeviceRole; // Device Role (Controller or Viewer)
     private static RadioGroup mRoleButton; // Device Role Radio Button
+    private static MainActivity mMainInstatnce;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -38,6 +41,7 @@ public class MainActivity extends ActivityBase implements RadioGroup.OnCheckedCh
             videoTransaction.replace(R.id.button_video_fragment, mVideoFragment);
             videoTransaction.commit();
         }
+        mMainInstatnce = this;
     }
 
     @Override
@@ -85,7 +89,11 @@ public class MainActivity extends ActivityBase implements RadioGroup.OnCheckedCh
             case Constants.MESSAGE_BT_CONNECTED:
                 if (mDeviceRole == MainActivity.ROLE_CONTROLLER) {
                     mVideoFragment.enableButton();
-                } else {
+                } else { // Device role is viewer
+                    if (DBG) {
+                        Log.d(TAG, "Device role is viewer");
+                    }
+                    mMainInstatnce.startVideoView();
                 }
                 break;
             case Constants.MESSAGE_BT_DISCONNECTED:
@@ -93,5 +101,10 @@ public class MainActivity extends ActivityBase implements RadioGroup.OnCheckedCh
                 mVideoFragment.disableButton();
                 break;
         }
+    }
+
+    public void startVideoView() {
+        Intent intent = new Intent(getApplicationContext() , VrVideoActivity.class);
+        startActivity(intent);
     }
 }
