@@ -284,22 +284,14 @@ public class VrVideoActivity extends Activity {
                 fileUri = getVideoPATH(arr[Protocol.INDEX_PLAY_NUM]);
                 backgroundVideoLoaderTask = new VideoLoaderTask();
                 backgroundVideoLoaderTask.execute(Pair.create(fileUri, videoOptions));
-                /*
-                if(arr[PROTOCOL_MSG_PLAY_NUM] != null) {
-                    int video = Integer.parseInt(arr[PROTOCOL_MSG_PLAY_NUM]);
-                    if (video != 0) {
-                        isPlaying = 1;
-                        setVideo(video);
-                        backgroundVideoLoaderTask = new VideoLoaderTask();
-                        backgroundVideoLoaderTask.execute(Pair.create(fileUri, videoOptions));
-                        playVideo();
-                    }
-                }
-                */
                 break;
 
-            case "stop":
-                stopVideo();
+            case Protocol.CMD_PAUSE:
+                pauseVideo();
+                break;
+
+            case Protocol.CMD_STOP:
+                pauseVideo();
                 mVrVideoView.seekTo(0);
                 finish();
                 break;
@@ -328,31 +320,7 @@ public class VrVideoActivity extends Activity {
         }
     }
 
-    protected void setVideo(int video) {
-        selectedVideo = video;
-    }
-
-    protected String getVideo() {
-        String videoName = null;
-        switch (selectedVideo) {
-            case 1:
-                videoName = DEFAULT_VIDEO_NAME;
-                break;
-
-            case 2:
-                videoName = DEFAULT_VIDEO_NAME;
-                break;
-
-            case 3:
-                videoName = DEFAULT_VIDEO_NAME;
-                break;
-
-        }
-
-        return videoName;
-    }
-
-    protected void stopVideo() {
+    protected void pauseVideo() {
         mVrVideoView.pauseVideo();
     }
 
@@ -521,10 +489,6 @@ public class VrVideoActivity extends Activity {
         isPaused = !isPaused;
     }
 
-    protected void handleCommand(String[] arr) {
-
-    }
-
     public int getLoadVideoStatus() {
         return loadVideoStatus;
     }
@@ -532,27 +496,6 @@ public class VrVideoActivity extends Activity {
     public void reset() {
         togglePause();
         mVrVideoView.seekTo(0);
-    }
-
-    /**
-     * When the user manipulates the seek bar, update the video position.
-     */
-    private class SeekBarListener implements SeekBar.OnSeekBarChangeListener {
-        @Override
-        public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-            if (fromUser) {
-                mVrVideoView.seekTo(progress);
-//                updateStatusText();
-            } // else this was from the ActivityEventHandler.onNewFrame()'s seekBar.setProgress update.
-        }
-
-        @Override
-        public void onStartTrackingTouch(SeekBar seekBar) {
-        }
-
-        @Override
-        public void onStopTrackingTouch(SeekBar seekBar) {
-        }
     }
 
     /**
