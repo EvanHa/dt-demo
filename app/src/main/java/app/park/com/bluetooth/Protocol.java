@@ -24,4 +24,8 @@ public interface Protocol {
 
     public static final int  INDEX_PLAY_NUM = 1; // If command is play, next value is play video number
     public static final int  INDEX_SCORE = 2;   // Should be removed.
+
+    public static final String PLAY_VIDEO_NUMBER1 = "1";
+    public static final String PLAY_VIDEO_NUMBER2 = "2";
+    public static final String PLAY_VIDEO_NUMBER3 = "3";
 }
