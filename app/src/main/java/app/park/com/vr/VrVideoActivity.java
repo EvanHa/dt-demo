@@ -115,7 +115,7 @@ public class VrVideoActivity extends Activity {
 
     //selection of video
     private static int selectedVideo = 1;
-    private static int isPlaying = 0;
+    private static boolean isPlaying = false;
 
     /**
      * By default, the video will start playing as soon as it is loaded. This can be changed by using
@@ -212,7 +212,7 @@ public class VrVideoActivity extends Activity {
                             case Constants.BLUETOOTH_CONNECTING:
                                 break;
                             case Constants.BLUETOOTH_NONE:
-                                Toast.makeText(getApplicationContext(), "BT DISCONNECT!!!", Toast.LENGTH_SHORT).show();
+                                Toast.makeText(getApplicationContext(), R.string.info_msg_bt_disconnected, Toast.LENGTH_SHORT).show();
                                 finish();
                                 break;
                         }
@@ -267,9 +267,6 @@ public class VrVideoActivity extends Activity {
         if (USE_ASSET_PATH == false) {
             path = Uri.parse(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MOVIES).getAbsolutePath() + File.separator + DEFAULT_VIDEO_NAME);
         }
-
-        Log.e(TAG, "===== " + path.toString());
-
         return path;
     }
 
@@ -296,9 +293,9 @@ public class VrVideoActivity extends Activity {
                 finish();
                 break;
 
-            case "gamerun":
-                //Is this game playing?
-                if(isPlaying == 1) {
+            case Protocol.CMD_GAMERUN:
+                // 비디오가 정상적으로 로드 되었을때 부터 게임 처리
+                if (getLoadVideoStatus() == LOAD_VIDEO_STATUS_SUCCESS) {
                     //Speed
                     if (arr[PROTOCOL_MSG_SPEED] != null) {
                         speed = Double.parseDouble((arr[PROTOCOL_MSG_SPEED]));
@@ -310,11 +307,26 @@ public class VrVideoActivity extends Activity {
                             setSpeed(speed);
                         }
                     }
-
-
-                    //score 계산을 위해서 arr. 던져주고 감점되는 값을 받아옴
-                    //getPenalty는 도민이가 정의한 class의 임시명
+                    if (isPlaying == false) { // 비디오 Pasue 상태
+                        if (speed > 0) { // speed 가 0보다 크면 엑셀을 누른 상태
+                            playVideo();
+                        }
+                    } else { // 비디오 Play 상태
+                        if (speed == 0) { // speed가 0이면 동작 않하는 상태, 게임 체크할 필요도 없
+                            pauseVideo();
+                        } else {
+                            //TODO
+                            //1. Senario에 arr을 던져 현재 penalty값을 체크 pass/fail (0이면 pass, 0 미만이면 fail)
+                            //2. fail인경우, Score 업데이트
+                            //3. 70점이하인지 체크
+                            //4. 70점 이하면 컨트롤러에 Ack 전송(컨트롤 메시지 보내지 못하도록)
+                            //5. 비디오 포즈
+                            //6. 게임 종료 팝업 & 다시할지 여부 체크
+                            //score 계산을 위해서 arr. 던져주고 감점되는 값을 받아옴
+                            //getPenalty는 도민이가 정의한 class의 임시명
 //                    setScore(getPenalty(arr, mVrVideoView.getCurrentPosition()));
+                        }
+                    }
                 }
                 break;
         }
@@ -322,10 +334,12 @@ public class VrVideoActivity extends Activity {
 
     protected void pauseVideo() {
         mVrVideoView.pauseVideo();
+        isPlaying = false;
     }
 
     protected void playVideo() {
         mVrVideoView.playVideo();
+        isPlaying = true;
     }
 
     //set speed factor(multiplication of 1000 to make factor as millisecond)

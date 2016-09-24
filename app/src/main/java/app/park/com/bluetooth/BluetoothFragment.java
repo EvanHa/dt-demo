@@ -53,6 +53,7 @@ public class BluetoothFragment extends Fragment {
     // Layout Views
     private Button mDiscoverableButton;
     private Button mConnectButton;
+    private Button mDisConnectButton;
 
     /**
      * Member object for the Bluetooth services
@@ -87,6 +88,7 @@ public class BluetoothFragment extends Fragment {
     public void onViewCreated(View view, Bundle savedInstanceState) {
         mDiscoverableButton = (Button) view.findViewById(R.id.btn_bt_discoverable);
         mConnectButton = (Button) view.findViewById(R.id.btn_bt_connect);
+        mDisConnectButton = (Button) view.findViewById(R.id.btn_bt_disconnect);
     }
 
     @Override
@@ -146,6 +148,14 @@ public class BluetoothFragment extends Fragment {
                 // Launch the DeviceListActivity to see devices and do scan
                 Intent serverIntent = new Intent(getActivity(), BluetoothDeviceList.class);
                 startActivityForResult(serverIntent, REQUEST_CONNECT_DEVICE_SECURE);
+            }
+        });
+
+        mDisConnectButton.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                if (mBluetoothService.getState() == BluetoothService.STATE_CONNECTED) {
+                    mBluetoothService.stop();
+                }
             }
         });
 
