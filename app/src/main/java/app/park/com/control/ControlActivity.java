@@ -479,7 +479,7 @@ public class ControlActivity extends Activity implements SensorEventListener,
 									if(velocity.compareTo(VELOCITY_DEFAULT) < 0) {
 										velocity = VELOCITY_DEFAULT;
 									}
-									mBluetoothService.sendMessage("gamerun////" + velocity.doubleValue() + "////" + score);
+//									mBluetoothService.sendMessage("gamerun////" + velocity.doubleValue() + "////" + score);
 //									Log.d(TAG, "gamerun////" + velocity + "////" + score);
 								}
 							}
@@ -555,7 +555,7 @@ public class ControlActivity extends Activity implements SensorEventListener,
 								if(velocity.compareTo(VELOCITY_DEFAULT) < 0) {
 									velocity = VELOCITY_DEFAULT;
 								}
-								mBluetoothService.sendMessage("gamerun////" + velocity.doubleValue() + "////" + score);
+//								mBluetoothService.sendMessage("gamerun////" + velocity.doubleValue() + "////" + score);
 //							}
 						}
 					}, 0, 1000);
@@ -593,7 +593,7 @@ public class ControlActivity extends Activity implements SensorEventListener,
 									if(velocity.compareTo(VELOCITY_DEFAULT) < 0) {
 										velocity = VELOCITY_DEFAULT;
 									}
-									mBluetoothService.sendMessage("gamerun////" + velocity.doubleValue() + "////" + score);
+//									mBluetoothService.sendMessage("gamerun////" + velocity.doubleValue() + "////" + score);
 //									Log.d(TAG, "gamerun////" + velocity + "////" + score);
 //									Log.d(TAG, "[2]자연 속도감소 -0.1");
 								}
