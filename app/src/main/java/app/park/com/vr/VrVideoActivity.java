@@ -60,7 +60,7 @@ public class VrVideoActivity extends Activity {
     public static final String TAG = VrVideoActivity.class.getSimpleName();
     public static final boolean DBG = true;
 
-    public static final boolean USE_ASSET_PATH = true;
+    public static final boolean USE_ASSET_PATH = false;
     private static final String DEFAULT_VIDEO_NAME = "car.mp4";
 
     /**
@@ -324,13 +324,43 @@ public class VrVideoActivity extends Activity {
                             //6. 게임 종료 팝업 & 다시할지 여부 체크
                             //score 계산을 위해서 arr. 던져주고 감점되는 값을 받아옴
                             //getPenalty는 도민이가 정의한 class의 임시명
-//                    setScore(getPenalty(arr, mVrVideoView.getCurrentPosition()));
+                            setScore(getPenalty(arr, mVrVideoView.getCurrentPosition()));
                         }
                     }
                 }
                 break;
         }
     }
+
+
+    public static int safeLongToInt(long l) {
+        if (l < Integer.MIN_VALUE || l > Integer.MAX_VALUE) {
+            throw new IllegalArgumentException
+                    (l + " cannot be cast to int without changing its value.");
+        }
+        return (int) l;
+    }
+
+
+
+
+    // 시나리오 체크
+    public static int getPenalty(String[] arr, long currentTime) {
+        int second = safeLongToInt(currentTime / 1000);
+
+        Log.d(TAG, "########currentTime = " + currentTime);
+        Log.d(TAG, "########currentTime(s) = " + second);
+
+
+        // 10~12초 사이에 엑셀 눌렀니
+        if (10 <= second && second <= 12) {
+//            ....
+        }
+        return 0;
+    }
+
+
+
 
     protected void pauseVideo() {
         mVrVideoView.pauseVideo();
@@ -568,6 +598,7 @@ public class VrVideoActivity extends Activity {
 //                if (((mCurrCount-mPrevCount) > 0)) {
                 long speed = (long) getSpeedToMilliSecond();
                 long videoPosition = mVrVideoView.getCurrentPosition();
+//                long videoPosition = mVrVideoView.getDuration();
                 if (speed != 0) {
                     videoPosition += speed;
                     mVrVideoView.seekTo(videoPosition);
