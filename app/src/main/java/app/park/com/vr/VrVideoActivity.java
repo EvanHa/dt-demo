@@ -14,7 +14,6 @@ import android.view.View;
 import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.PopupWindow;
-import android.widget.SeekBar;
 import android.widget.Toast;
 
 import com.google.vr.sdk.widgets.video.VrVideoEventListener;
@@ -94,8 +93,8 @@ public class VrVideoActivity extends Activity {
     public static final int LOAD_VIDEO_STATUS_ERROR = 2;
     public static final int TIME_THRESHOLD_SECOND = 1000;
     public static final int TIME_THRESHOLD_FRAME_UPDATE = 500;
-    public static final double DEFAULT_SPEED = 0.5;
-    public static final double MAX_SPEED = 1.5;
+    public static final double DEFAULT_SPEED = 0.0;
+    public static final double MAX_SPEED = 1.0;
 
     private int loadVideoStatus;
     private Uri fileUri;    // Tracks the file to be loaded across the lifetime of this app.
@@ -400,7 +399,8 @@ public class VrVideoActivity extends Activity {
 
 //        if (speed > 0) { // 입력값이 양수
         if (mSpeed >= 0) { // 기존값이 없거나, 있었다고 하면 Default + (speed - 0.1)
-            mSpeed = (DEFAULT_SPEED + (speed - 0.1));
+//            mSpeed = (DEFAULT_SPEED + (speed - 0.1));
+            mSpeed = speed;
         }
         if (mSpeed > MAX_SPEED) { // MAX Speed를 초과하지는 못하도록 설정
             mSpeed = MAX_SPEED;
