@@ -79,7 +79,7 @@ public class ControlActivity extends Activity implements SensorEventListener,
 	static float btnAccElapsedTime = 0;
 	static float btnBrakeElapsedTime = 0;
 
-	static final BigDecimal VELOCITY_DEFAULT = new BigDecimal("0.5"); // 시작시간
+	static final BigDecimal VELOCITY_DEFAULT = new BigDecimal("0"); // 시작시간
 	static final BigDecimal VELOCITY_MAX = new BigDecimal("1.5"); // 시작시간
 	static final BigDecimal VELOCITY_INCREASE = new BigDecimal("0.1"); // 속도 증가값
 	static final BigDecimal VELOCITY_BREAK_DECREASE = new BigDecimal("0.5"); // 속도 감소값 (브레이크)
@@ -411,7 +411,7 @@ public class ControlActivity extends Activity implements SensorEventListener,
 //							if(btnAccElapsedTime >= 1) {
 								// 처음 액셀 눌렀으면 isFirstAccleated 변수 = true
 								if(!isFirstAccleated) {
-//									mBluetoothService.sendMessage("play////1");
+									mBluetoothService.sendMessage("play////1");
 //									Log.d(TAG, "isFirstAccleated!!!!       play////1");
 									isFirstAccleated = true;
 								}
