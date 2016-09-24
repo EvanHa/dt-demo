@@ -324,7 +324,7 @@ public class VrVideoActivity extends Activity {
                             //6. 게임 종료 팝업 & 다시할지 여부 체크
                             //score 계산을 위해서 arr. 던져주고 감점되는 값을 받아옴
                             //getPenalty는 도민이가 정의한 class의 임시명
-                            setScore(getPenalty(arr, mVrVideoView.getCurrentPosition()));
+                            validateTask(arr, mVrVideoView.getCurrentPosition());
                         }
                     }
                 }
@@ -344,19 +344,38 @@ public class VrVideoActivity extends Activity {
 
 
 
+    public static boolean task1 = false;
     // 시나리오 체크
-    public static int getPenalty(String[] arr, long currentTime) {
+    public void validateTask(String[] arr, long currentTime) {
         int second = safeLongToInt(currentTime / 1000);
-
         Log.d(TAG, "########currentTime = " + currentTime);
         Log.d(TAG, "########currentTime(s) = " + second);
 
+		/*
+			cmd////velocity////handle[0,1,2]////깜빡이[0,1,2]////엑셀[0,1]////브레이크[0,1]
 
-        // 10~12초 사이에 엑셀 눌렀니
+			handle
+			0=직진, 1=좌회전, 2=우회전
+
+			깜빡이
+			0=좌 신호, 1=중립, 2=우 신호
+
+			엑셀, 브레이크
+			0=안누름, 1=누름
+		 */
+
+        // 10~12초 사이에 엑셀 눌렀는지 체크
         if (10 <= second && second <= 12) {
-//            ....
+            if(arr[4].equals("1")) {
+                task1 = true;
+            }
         }
-        return 0;
+        // 13초에 task1 수행여부에 따라 감점
+        if (second == 13) {
+            if(! task1) {
+                setScore(-5);
+            }
+        }
     }
 
 
