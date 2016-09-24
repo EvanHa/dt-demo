@@ -368,11 +368,14 @@ public class VrVideoActivity extends Activity {
             if(arr[4].equals("1")) {
                 task1 = true;
             }
+            Log.d(TAG, "######## 10~12 sec. task1 = " + task1);
+
         }
         // 13초에 task1 수행여부에 따라 감점
         if (second == 13) {
             if(! task1) {
                 setScore(-5);
+                Log.d(TAG, "######## score  -= -5");
             }
         }
     }
