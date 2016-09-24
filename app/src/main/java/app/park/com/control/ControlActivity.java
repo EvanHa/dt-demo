@@ -256,10 +256,18 @@ public class ControlActivity extends Activity implements SensorEventListener,
 						break;
 					case Constants.MESSAGE_READ:
 
-						// 메시지가 미션페일이면 속도 0으로 하고 toast
-						velocity = VELOCITY_DEFAULT;
-						Toast.makeText(getApplicationContext(), "5초 전", Toast.LENGTH_SHORT).show();
 
+						// vr쪽 나갔으면 여기도 메인으로 나감
+						if(msg.equals("stop")) {
+							Intent intent = new Intent(getApplicationContext(), MainActivity.class);
+							startActivity(intent);
+						}
+
+						// 메시지가 미션페일이면 속도 0으로 하고 toast
+						if(msg.equals("rewind")) {
+							velocity = VELOCITY_DEFAULT;
+							Toast.makeText(getApplicationContext(), "5초 전", Toast.LENGTH_SHORT).show();
+						}
 						break;
 					case Constants.MESSAGE_WRITE:
 
