@@ -55,7 +55,7 @@ public class ControlActivity extends Activity implements SensorEventListener,
 	private BluetoothHandler mHandler = null;
 	private BluetoothHandler.ActivityCb mActivityCb = null;
 
-	boolean isFirstAccleated = false;
+	public static boolean isFirstAccleated = false;
 
 	ImageView turn_stick;
 	ImageView btnAcc;
@@ -89,6 +89,7 @@ public class ControlActivity extends Activity implements SensorEventListener,
 	static final String STATUS_GAMERUN = "gamerun";
 
 	static BigDecimal velocity = VELOCITY_DEFAULT;
+	static BigDecimal velocity2 = VELOCITY_DEFAULT;
 
 	private static boolean scenarioTask1 = false;
 	private static boolean scenarioTask2 = false;
@@ -811,6 +812,9 @@ public class ControlActivity extends Activity implements SensorEventListener,
 		) {
 			@Override
 			public void onClick(View view) {
+				// 정지 메시지 보냄
+				mBluetoothService.sendMessage("stop////1");
+
 				Intent intent = new Intent(getApplicationContext(), MainActivity.class);
 				startActivity(intent);
 			}
@@ -838,8 +842,8 @@ public class ControlActivity extends Activity implements SensorEventListener,
 			0=안누름, 1=누름
 		 */
 
-		// 속도 0이 아니면 보냄
-		if (velocity.compareTo(BigDecimal.ZERO) != 0) {
+		// 속도가 달라졌거나, 속도 0이 아니면 보냄
+		if (velocity.compareTo(velocity2) != 0 || velocity.compareTo(BigDecimal.ZERO) != 0) {
 			mBluetoothService.sendMessage(cmd + BLUETHOOTH_MESSAGE_SEPARATOR +
 					velocity + BLUETHOOTH_MESSAGE_SEPARATOR +
 					HANDLE_STATUS + BLUETHOOTH_MESSAGE_SEPARATOR +
@@ -854,5 +858,6 @@ public class ControlActivity extends Activity implements SensorEventListener,
 					ACC_STATUS + BLUETHOOTH_MESSAGE_SEPARATOR +
 					BRAKE_STATUS + BLUETHOOTH_MESSAGE_SEPARATOR);
 		}
+		velocity2 = velocity;
 	}
 }
