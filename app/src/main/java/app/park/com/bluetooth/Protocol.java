@@ -13,7 +13,8 @@ public interface Protocol {
     public static final String CMD_PLAY  = "play";
     public static final String CMD_PAUSE = "pause";
     public static final String CMD_STOP  = "stop";
-    public static final String CMD_CTRL  = "control";
+    public static final String CMD_GAMERUN  = "gamerun";
+    public static final String CMD_ACK  = "ack";
 
     public static final int  INDEX_CMD = 0;
     public static final int  INDEX_SPEED = 1;
