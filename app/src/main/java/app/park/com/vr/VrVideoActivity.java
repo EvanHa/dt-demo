@@ -212,7 +212,7 @@ public class VrVideoActivity extends Activity {
                             case Constants.BLUETOOTH_CONNECTING:
                                 break;
                             case Constants.BLUETOOTH_NONE:
-                                Toast.makeText(getApplicationContext(), "BT DISCONNECT!!!", Toast.LENGTH_SHORT).show();
+                                Toast.makeText(getApplicationContext(), R.string.info_msg_bt_disconnected, Toast.LENGTH_SHORT).show();
                                 finish();
                                 break;
                         }
@@ -267,9 +267,6 @@ public class VrVideoActivity extends Activity {
         if (USE_ASSET_PATH == false) {
             path = Uri.parse(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MOVIES).getAbsolutePath() + File.separator + DEFAULT_VIDEO_NAME);
         }
-
-        Log.e(TAG, "===== " + path.toString());
-
         return path;
     }
 
@@ -315,7 +312,7 @@ public class VrVideoActivity extends Activity {
                             playVideo();
                         }
                     } else { // 비디오 Play 상태
-                        if (speed == 0) { // speed가 0이면 동작 않하는 상태, 게임 체크할 필요도 없음
+                        if (speed == 0) { // speed가 0이면 동작 않하는 상태, 게임 체크할 필요도 없
                             pauseVideo();
                         } else {
                             //TODO

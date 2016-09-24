@@ -24,7 +24,6 @@
             android:layout_weight="1"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:onClick="OnClick"
             android:text="@string/btn_bt_discoverable"/>
 
         <Button
@@ -32,7 +31,13 @@
             android:layout_weight="1"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:onClick="OnClick"
             android:text="@string/btn_bt_connect"/>
+
+        <Button
+            android:id="@+id/btn_bt_disconnect"
+            android:layout_weight="1"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="@string/btn_bt_disconnect"/>
 
 </LinearLayout>

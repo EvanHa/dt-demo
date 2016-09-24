@@ -35,6 +35,7 @@
 
     <string name="btn_bt_discoverable">Bluetooth\ndiscoverable</string>
     <string name="btn_bt_connect">Bluetooth\nconnect</string>
+    <string name="btn_bt_disconnect">Bluetooth\ndisconnect</string>
     <string name="btn_play1">Play 1</string>
     <string name="btn_play2">Play 2</string>
     <string name="btn_play3">Play 3</string>
@@ -44,4 +45,5 @@
     <string name="radio_viewer">Viewer</string>
 
     <string name="info_msg_select_video">Please select video you want to play on the controller</string>
+    <string name="info_msg_bt_disconnected">Bluetooth is disconnected</string>
 </resources>
