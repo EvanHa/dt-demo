@@ -28,6 +28,7 @@ import app.park.com.R;
 import app.park.com.bluetooth.BluetoothHandler;
 import app.park.com.bluetooth.BluetoothService;
 import app.park.com.bluetooth.Constants;
+import app.park.com.bluetooth.Protocol;
 
 import static app.park.com.R.layout.popup;
 
@@ -58,6 +59,9 @@ import static app.park.com.R.layout.popup;
 public class VrVideoActivity extends Activity {
     public static final String TAG = VrVideoActivity.class.getSimpleName();
     public static final boolean DBG = true;
+
+    public static final boolean USE_ASSET_PATH = true;
+    private static final String DEFAULT_VIDEO_NAME = "car.mp4";
 
     /**
      * Preserve the video's state when rotating the phone.
@@ -93,7 +97,7 @@ public class VrVideoActivity extends Activity {
     public static final double DEFAULT_SPEED = 0.5;
     public static final double MAX_SPEED = 1.5;
 
-    private int loadVideoStatus = LOAD_VIDEO_STATUS_UNKNOWN;
+    private int loadVideoStatus;
     private Uri fileUri;    // Tracks the file to be loaded across the lifetime of this app.
     private Options videoOptions = new Options();  // Configuration information for the video.
     private VideoLoaderTask backgroundVideoLoaderTask;
@@ -125,20 +129,17 @@ public class VrVideoActivity extends Activity {
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
-
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_video_view);
 
         // Bind input and output objects for the view.
         mVrVideoView = (VrVideoView) findViewById(R.id.video_view);
         mVrVideoView.setEventListener(new ActivityEventListener());
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON); // 화면 자동 꺼짐 방지
 
         loadVideoStatus = LOAD_VIDEO_STATUS_UNKNOWN;
 
-        mBluetoothService = BluetoothService.getInstance();
-        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON); // 화면 자동 꺼짐 방지
-
-        // Initial launch of the app or an Activity recreation due to rotation.
+        mBluetoothService = BluetoothService.getInstance();                    // Bluetooth Service
         handleIntent(getIntent());
     }
 
@@ -147,7 +148,9 @@ public class VrVideoActivity extends Activity {
      */
     @Override
     protected void onNewIntent(Intent intent) {
-        Log.i(TAG, this.hashCode() + ".onNewIntent()");
+        if (DBG) {
+            Log.i(TAG, this.hashCode() + ".onNewIntent()" + " intent = " + intent.toString());
+        }
         // Save the intent. This allows the getIntent() call in onCreate() to use this new Intent during
         // future invocations.
         setIntent(intent);
@@ -160,6 +163,9 @@ public class VrVideoActivity extends Activity {
      * class for information on generating a custom intent via adb.
      */
     private void handleIntent(Intent intent) {
+        if (DBG) {
+            Log.i(TAG, "intent = " + intent.toString());
+        }
         // Determine if the Intent contains a file to load.
         if (Intent.ACTION_VIEW.equals(intent.getAction())) {
             Log.i(TAG, "ACTION_VIEW Intent received");
@@ -174,8 +180,10 @@ public class VrVideoActivity extends Activity {
             videoOptions.inputFormat = intent.getIntExtra("inputFormat", Options.FORMAT_DEFAULT);
             videoOptions.inputType = intent.getIntExtra("inputType", Options.TYPE_MONO);
         } else {
-            Log.i(TAG, "Intent is not ACTION_VIEW. Using the default video.");
+            Log.i(TAG, "Intent has not ACTION_VIEW. Using the default video.");
             fileUri = null;
+            videoOptions.inputFormat = Options.FORMAT_DEFAULT;
+            videoOptions.inputType = Options.TYPE_MONO;
         }
 
         // Load the bitmap in a background thread to avoid blocking the UI thread. This operation can
@@ -184,8 +192,6 @@ public class VrVideoActivity extends Activity {
             // Cancel any task from a previous intent sent to this activity.
             backgroundVideoLoaderTask.cancel(true);
         }
-        //영상 시작 guide message
-        Toast.makeText(getApplicationContext(), R.string.info_msg_select_video, Toast.LENGTH_LONG).show();
     }
 
     @Override
@@ -213,7 +219,7 @@ public class VrVideoActivity extends Activity {
                         break;
                     case Constants.MESSAGE_READ:
                         if(msg != null) {
-                            String[] arr = msg.split("////");
+                            String[] arr = msg.split(Protocol.SEPARATOR);
                             Log.i("TAG", "*******" + msg);
                             Log.i("TAG", "*******" + arr.length);
                             Log.i("TAG", "*******" + arr[0]);
@@ -223,7 +229,6 @@ public class VrVideoActivity extends Activity {
                         }
                         break;
                     case Constants.MESSAGE_WRITE:
-
                         break;
                     case Constants.MESSAGE_DEVICE_NAME:
                         break;
@@ -236,6 +241,36 @@ public class VrVideoActivity extends Activity {
         };
         mHandler.setActivityCb(mActivityCb);
         mBluetoothService.setActivityHandler(mHandler);
+
+        //영상 시작 guide message
+        Toast.makeText(getApplicationContext(), R.string.info_msg_select_video, Toast.LENGTH_SHORT).show();
+    }
+
+    private Uri getVideoPATH(String number) {
+        Uri path = null;
+        switch (number) {
+            case Protocol.PLAY_VIDEO_NUMBER1:
+                path = Uri.parse(DEFAULT_VIDEO_NAME);
+                break;
+            case Protocol.PLAY_VIDEO_NUMBER2:
+                path = Uri.parse(DEFAULT_VIDEO_NAME);
+                break;
+            case Protocol.PLAY_VIDEO_NUMBER3:
+                path = Uri.parse(DEFAULT_VIDEO_NAME);
+                break;
+            default:
+                Log.w(TAG, "Video number has error. So we should use default value.");
+                path = Uri.parse(DEFAULT_VIDEO_NAME);
+                break;
+        }
+
+        if (USE_ASSET_PATH == false) {
+            path = Uri.parse(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MOVIES).getAbsolutePath() + File.separator + DEFAULT_VIDEO_NAME);
+        }
+
+        Log.e(TAG, "===== " + path.toString());
+
+        return path;
     }
 
     private void executeCommand(String[] arr) {
@@ -243,22 +278,20 @@ public class VrVideoActivity extends Activity {
         // play||||1,2,3 -> 1,2,3번 동영상 재생
         // stop||||1,2,3 -> 현재 동영상 멈춤
         // cmd|||||40||||90 -> 속도 40, 점수 90
-        switch (arr[PROTOCOL_MSG_CMD]) {
-            case "play":
-                if(arr[PROTOCOL_MSG_PLAY_NUM] != null) {
-                    int video = Integer.parseInt(arr[PROTOCOL_MSG_PLAY_NUM]);
-                    if (video != 0) {
-                        isPlaying = 1;
-                        setVideo(video);
-                        backgroundVideoLoaderTask = new VideoLoaderTask();
-                        backgroundVideoLoaderTask.execute(Pair.create(fileUri, videoOptions));
-                        playVideo();
-                    }
-                }
+        String cmd = arr[Protocol.INDEX_CMD];
+        switch (cmd) {
+            case Protocol.CMD_PLAY:
+                fileUri = getVideoPATH(arr[Protocol.INDEX_PLAY_NUM]);
+                backgroundVideoLoaderTask = new VideoLoaderTask();
+                backgroundVideoLoaderTask.execute(Pair.create(fileUri, videoOptions));
                 break;
 
-            case "stop":
-                stopVideo();
+            case Protocol.CMD_PAUSE:
+                pauseVideo();
+                break;
+
+            case Protocol.CMD_STOP:
+                pauseVideo();
                 mVrVideoView.seekTo(0);
                 finish();
                 break;
@@ -287,31 +320,7 @@ public class VrVideoActivity extends Activity {
         }
     }
 
-    protected void setVideo(int video) {
-        selectedVideo = video;
-    }
-
-    protected String getVideo() {
-        String videoName = null;
-        switch (selectedVideo) {
-            case 1:
-                videoName = "car.mp4";
-                break;
-
-            case 2:
-                videoName = "car.mp4";
-                break;
-
-            case 3:
-                videoName = "car.mp4";
-                break;
-
-        }
-
-        return videoName;
-    }
-
-    protected void stopVideo() {
+    protected void pauseVideo() {
         mVrVideoView.pauseVideo();
     }
 
@@ -480,10 +489,6 @@ public class VrVideoActivity extends Activity {
         isPaused = !isPaused;
     }
 
-    protected void handleCommand(String[] arr) {
-
-    }
-
     public int getLoadVideoStatus() {
         return loadVideoStatus;
     }
@@ -491,27 +496,6 @@ public class VrVideoActivity extends Activity {
     public void reset() {
         togglePause();
         mVrVideoView.seekTo(0);
-    }
-
-    /**
-     * When the user manipulates the seek bar, update the video position.
-     */
-    private class SeekBarListener implements SeekBar.OnSeekBarChangeListener {
-        @Override
-        public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-            if (fromUser) {
-                mVrVideoView.seekTo(progress);
-//                updateStatusText();
-            } // else this was from the ActivityEventHandler.onNewFrame()'s seekBar.setProgress update.
-        }
-
-        @Override
-        public void onStartTrackingTouch(SeekBar seekBar) {
-        }
-
-        @Override
-        public void onStopTrackingTouch(SeekBar seekBar) {
-        }
     }
 
     /**
@@ -526,6 +510,7 @@ public class VrVideoActivity extends Activity {
         public void onLoadSuccess() {
             Log.i(TAG, "Sucessfully loaded video " + mVrVideoView.getDuration());
             loadVideoStatus = LOAD_VIDEO_STATUS_SUCCESS;
+            mVrVideoView.pauseVideo();
         }
 
         /**
@@ -619,13 +604,14 @@ public class VrVideoActivity extends Activity {
 //                videoUri = Uri.parse(videoName);
 
                 //test 용 uri
-                videoUri = Uri.parse(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MOVIES).getAbsolutePath() + File.separator + "car.mp4");
+                videoUri = Uri.parse(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MOVIES).getAbsolutePath() + File.separator + DEFAULT_VIDEO_NAME);
 
                 result = true;
             } else {
-                videoOptions = fileInformation[0].second;
                 videoUri = fileInformation[0].first;
+                videoOptions = fileInformation[0].second;
             }
+            Log.d(TAG, "doInBackground out !!");
             return result;
         }
 
@@ -641,21 +627,25 @@ public class VrVideoActivity extends Activity {
                 Log.d(TAG, "onPostExecute!!!");
                 if (aBoolean) {
                     mVrVideoView.setDisplayMode(VrVideoView.DisplayMode.FULLSCREEN_STEREO);
-//                    mVrVideoView.setStereoModeButtonEnabled(false);
+                    //mVrVideoView.setStereoModeButtonEnabled(false);
                     mVrVideoView.setInfoButtonEnabled(false);
                     mVrVideoView.setFullscreenButtonEnabled(false);
-
                     //bluetooth에서 select한 video를 가져온다
-                    String videoName = getVideo();
-                    if (DBG) {
-                        Log.i(TAG, "check - onPostexecute");
-                    }
-//                    mVrVideoView.loadVideoFromAsset(videoName, videoOptions);
-                    mVrVideoView.loadVideo(videoUri, videoOptions);
-                    Log.d(TAG, "### loadVideoFromAsset()");
+                    String videoName = DEFAULT_VIDEO_NAME;
+                    if (DBG) { Log.d(TAG, "### loadVideoFromAsset()"); }
+                    mVrVideoView.loadVideoFromAsset(videoName, videoOptions);
+                    //mVrVideoView.loadVideo(videoUri, videoOptions);
                 } else {
-                    mVrVideoView.loadVideo(videoUri, videoOptions);
-                    Log.d(TAG, "### loadVideo()");
+                    if (DBG) { Log.d(TAG, "### Video path : " + videoUri.toString()); }
+                    mVrVideoView.setDisplayMode(VrVideoView.DisplayMode.FULLSCREEN_STEREO);
+                    //mVrVideoView.setStereoModeButtonEnabled(false);
+                    mVrVideoView.setInfoButtonEnabled(false);
+                    mVrVideoView.setFullscreenButtonEnabled(false);
+                    if (USE_ASSET_PATH) {
+                        mVrVideoView.loadVideoFromAsset(videoUri.toString(), videoOptions);
+                    } else {
+                        mVrVideoView.loadVideo(videoUri, videoOptions);
+                    }
                 }
             } catch (IOException e) {
                 e.printStackTrace();
