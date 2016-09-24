@@ -254,6 +254,11 @@ public class ControlActivity extends Activity implements SensorEventListener,
 						}
 						break;
 					case Constants.MESSAGE_READ:
+
+						// 메시지가 미션페일이면 속도 0으로 하고 toast
+						velocity = VELOCITY_DEFAULT;
+						Toast.makeText(getApplicationContext(), "5초 전", Toast.LENGTH_SHORT).show();
+
 						break;
 					case Constants.MESSAGE_WRITE:
 
@@ -820,7 +825,6 @@ public class ControlActivity extends Activity implements SensorEventListener,
 	}
 
 	public void sendMessage(String log, String cmd) {
-
 		/*
 			cmd////velocity////handle[0,1,2]////깜빡이[0,1,2]////엑셀[0,1]////브레이크[0,1]
 
@@ -833,18 +837,22 @@ public class ControlActivity extends Activity implements SensorEventListener,
 			엑셀, 브레이크
 			0=안누름, 1=누름
 		 */
-		mBluetoothService.sendMessage(cmd + BLUETHOOTH_MESSAGE_SEPARATOR +
-				velocity + BLUETHOOTH_MESSAGE_SEPARATOR +
-				HANDLE_STATUS  + BLUETHOOTH_MESSAGE_SEPARATOR +
-				TURN_SIGNAL_STATUS  + BLUETHOOTH_MESSAGE_SEPARATOR +
-				ACC_STATUS  + BLUETHOOTH_MESSAGE_SEPARATOR +
-				BRAKE_STATUS  + BLUETHOOTH_MESSAGE_SEPARATOR);
 
-		Log.d(TAG, "[" +log + "]" + cmd + BLUETHOOTH_MESSAGE_SEPARATOR +
-				velocity + BLUETHOOTH_MESSAGE_SEPARATOR +
-				HANDLE_STATUS  + BLUETHOOTH_MESSAGE_SEPARATOR +
-				TURN_SIGNAL_STATUS  + BLUETHOOTH_MESSAGE_SEPARATOR +
-				ACC_STATUS  + BLUETHOOTH_MESSAGE_SEPARATOR +
-				BRAKE_STATUS  + BLUETHOOTH_MESSAGE_SEPARATOR);
+		// 속도 0이 아니면 보냄
+		if (velocity.compareTo(BigDecimal.ZERO) != 0) {
+			mBluetoothService.sendMessage(cmd + BLUETHOOTH_MESSAGE_SEPARATOR +
+					velocity + BLUETHOOTH_MESSAGE_SEPARATOR +
+					HANDLE_STATUS + BLUETHOOTH_MESSAGE_SEPARATOR +
+					TURN_SIGNAL_STATUS + BLUETHOOTH_MESSAGE_SEPARATOR +
+					ACC_STATUS + BLUETHOOTH_MESSAGE_SEPARATOR +
+					BRAKE_STATUS + BLUETHOOTH_MESSAGE_SEPARATOR);
+
+			Log.d(TAG, "[" + log + "]" + cmd + BLUETHOOTH_MESSAGE_SEPARATOR +
+					velocity + BLUETHOOTH_MESSAGE_SEPARATOR +
+					HANDLE_STATUS + BLUETHOOTH_MESSAGE_SEPARATOR +
+					TURN_SIGNAL_STATUS + BLUETHOOTH_MESSAGE_SEPARATOR +
+					ACC_STATUS + BLUETHOOTH_MESSAGE_SEPARATOR +
+					BRAKE_STATUS + BLUETHOOTH_MESSAGE_SEPARATOR);
+		}
 	}
 }
