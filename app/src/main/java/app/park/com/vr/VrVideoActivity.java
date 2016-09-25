@@ -62,7 +62,7 @@ public class VrVideoActivity extends Activity {
     public static final String TAG = VrVideoActivity.class.getSimpleName();
     public static final boolean DBG = true;
 
-    public static final boolean USE_ASSET_PATH = false;
+    public static final boolean USE_ASSET_PATH = true;
     private static final String DEFAULT_VIDEO_NAME = "car.mp4";
 
     /**
@@ -335,6 +335,7 @@ public class VrVideoActivity extends Activity {
                             if(penalty != 0) {
                                 setScore(penalty);
                                 if (getScore() < GAMEOVER_SCORE) {
+                                    pauseVideo();
                                     Toast.makeText(getApplicationContext(), " 70점 이하 fail!!", Toast.LENGTH_LONG).show();
 //                                    String ackMsg = Protocol.CMD_ACK+Protocol.SEPARATOR+Protocol.GAVE_OVER;
                                     mBluetoothService.sendMessage(Protocol.CMD_RESUME);
@@ -351,7 +352,7 @@ public class VrVideoActivity extends Activity {
                                     videoTime = 0;
                                 }
                                 mVrVideoView.seekTo(videoTime);
-                                mVrVideoView.pauseVideo();
+                                pauseVideo();
                             }
                         }
                     }
@@ -409,11 +410,18 @@ public class VrVideoActivity extends Activity {
     //set score
     private void setScore(int penalty) {
         score += penalty;
+        if (DBG) {
+            Log.d(TAG, "Change score : " + score);
+        }
     }
 
     //get current score
     public int getScore() {
         return score;
+    }
+
+    public void resetScore() {
+        score = 100;
     }
 
     @Override
@@ -546,8 +554,9 @@ public class VrVideoActivity extends Activity {
     }
 
     public void reset() {
-        togglePause();
+        //togglePause();
         mVrVideoView.seekTo(0);
+        resetScore();
     }
 
     /**
