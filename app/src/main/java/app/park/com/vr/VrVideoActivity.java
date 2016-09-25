@@ -754,9 +754,7 @@ public class VrVideoActivity extends Activity {
         builder.setNegativeButton("No", new DialogInterface.OnClickListener(){
             public void onClick(DialogInterface dialog, int whichButton){
                 mBluetoothService.sendMessage(Protocol.CMD_STOP);
-                isGameOver = false;
-                mVrVideoView.seekTo(0);
-                currTime = 0;
+                reset();
                 finish();
             }
         });
