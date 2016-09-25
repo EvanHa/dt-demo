@@ -336,13 +336,13 @@ public class VrVideoActivity extends Activity {
                                 setScore(penalty);
                                 if (getScore() < GAMEOVER_SCORE) {
                                     Toast.makeText(getApplicationContext(), " 70점 이하 fail!!", Toast.LENGTH_LONG).show();
-                                    String ackMsg = Protocol.CMD_ACK+Protocol.SEPARATOR+Protocol.GAVE_OVER;
-                                    mBluetoothService.sendMessage(ackMsg);
+//                                    String ackMsg = Protocol.CMD_ACK+Protocol.SEPARATOR+Protocol.GAVE_OVER;
+                                    mBluetoothService.sendMessage(Protocol.CMD_RESUME);
                                     AlertDialog gameOverDialog = crateGameOverDialog();
                                     gameOverDialog.show();
                                 }
-                                String ackMsg = Protocol.CMD_ACK+Protocol.SEPARATOR+Protocol.MISSION_FAIl;
-                                mBluetoothService.sendMessage(ackMsg);
+//                                String ackMsg = Protocol.CMD_ACK+Protocol.SEPARATOR+Protocol.MISSION_FAIl;
+                                mBluetoothService.sendMessage(Protocol.CMD_REWIND);
                                 Toast.makeText(getApplicationContext(), " fail!! 5초전으로 돌림", Toast.LENGTH_SHORT).show();
                                 long videoTime = mVrVideoView.getCurrentPosition();
                                 if (videoTime > REVERSE_TIME) {
@@ -448,6 +448,7 @@ public class VrVideoActivity extends Activity {
         ) {
             @Override
             public void onClick(View view) {
+                mBluetoothService.sendMessage(Protocol.CMD_STOP);
                 togglePause();
                 mVrVideoView.seekTo(0);
                 finish();
