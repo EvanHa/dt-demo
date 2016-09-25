@@ -29,4 +29,7 @@ public interface Protocol {
     public static final String PLAY_VIDEO_NUMBER1 = "1";
     public static final String PLAY_VIDEO_NUMBER2 = "2";
     public static final String PLAY_VIDEO_NUMBER3 = "3";
+
+    public static final int MISSION_FAIl = 1;
+    public static final int GAVE_OVER = 2;
 }

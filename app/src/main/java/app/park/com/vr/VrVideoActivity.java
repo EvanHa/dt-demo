@@ -1,6 +1,8 @@
 package app.park.com.vr;
 
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.AsyncTask;
@@ -96,6 +98,8 @@ public class VrVideoActivity extends Activity {
     public static final int TIME_THRESHOLD_FRAME_UPDATE = 200;
     public static final double DEFAULT_SPEED = 0.0;
     public static final double MAX_SPEED = 1.5;
+    public static final long REVERSE_TIME = 5000; // 5 seconds
+    public static final int GAMEOVER_SCORE = 70;
 
     private int loadVideoStatus;
     private Uri fileUri;    // Tracks the file to be loaded across the lifetime of this app.
@@ -327,6 +331,24 @@ public class VrVideoActivity extends Activity {
                             int penalty = TaskValidator.validate(arr, mVrVideoView.getCurrentPosition());
                             if(penalty != 0) {
                                 setScore(penalty);
+                                if (getScore() < GAMEOVER_SCORE) {
+                                    Toast.makeText(getApplicationContext(), " 70점 이하 fail!!", Toast.LENGTH_LONG).show();
+                                    String ackMsg = Protocol.CMD_ACK+Protocol.SEPARATOR+Protocol.GAVE_OVER;
+                                    mBluetoothService.sendMessage(ackMsg);
+                                    AlertDialog gameOverDialog = crateGameOverDialog();
+                                    gameOverDialog.show();
+                                }
+                                String ackMsg = Protocol.CMD_ACK+Protocol.SEPARATOR+Protocol.MISSION_FAIl;
+                                mBluetoothService.sendMessage(ackMsg);
+                                Toast.makeText(getApplicationContext(), " fail!! 5초전으로 돌림", Toast.LENGTH_SHORT).show();
+                                long videoTime = mVrVideoView.getCurrentPosition();
+                                if (videoTime > REVERSE_TIME) {
+                                    videoTime -= REVERSE_TIME;
+                                } else {
+                                    videoTime = 0;
+                                }
+                                mVrVideoView.seekTo(videoTime);
+                                mVrVideoView.pauseVideo();
                             }
                         }
                     }
@@ -672,5 +694,29 @@ public class VrVideoActivity extends Activity {
             }
             super.onPostExecute(aBoolean);
         }
+    }
+
+    private AlertDialog crateGameOverDialog() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+
+        builder.setTitle("GameOver");
+        builder.setMessage("다시 시작 하시겠습니까?");
+        //builder.setIcon(R.drawable.);  <-- dialog tile 옆 아이콘
+
+        // msg 는 그저 String 타입의 변수, tv 는 onCreate 메서드에 글을 뿌려줄 TextView
+        builder.setPositiveButton("Yes", new DialogInterface.OnClickListener(){
+            public void onClick(DialogInterface dialog, int whichButton){
+                reset();
+            }
+        });
+
+        builder.setNegativeButton("No", new DialogInterface.OnClickListener(){
+            public void onClick(DialogInterface dialog, int whichButton){
+                onBackPressed();
+            }
+        });
+
+        AlertDialog dialog = builder.create();
+        return dialog;
     }
 }
