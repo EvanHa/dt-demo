@@ -62,7 +62,7 @@ public class VrVideoActivity extends Activity {
     public static final String TAG = VrVideoActivity.class.getSimpleName();
     public static final boolean DBG = true;
 
-    public static final boolean USE_ASSET_PATH = true;
+    public static final boolean USE_ASSET_PATH = false;
     private static final String DEFAULT_VIDEO_NAME = "car.mp4";
 
     /**
@@ -100,6 +100,7 @@ public class VrVideoActivity extends Activity {
     public static final double MAX_SPEED = 1.5;
     public static final long REVERSE_TIME = 5000; // 5 seconds
     public static final int GAMEOVER_SCORE = 70;
+    public static final int TIME_GAP = 14;
 
     private int loadVideoStatus;
     private Uri fileUri;    // Tracks the file to be loaded across the lifetime of this app.
@@ -113,6 +114,8 @@ public class VrVideoActivity extends Activity {
 
     //previous values to check changes of factors(speed, turn signal light, steering wheel, accel., break)
     private static double preSpeed;
+    private static long currTime = 0;
+    private static long prevTime = 0;
 
     //speed, turn signal light, steering wheel, accel., break
     private static double speed;
@@ -333,13 +336,13 @@ public class VrVideoActivity extends Activity {
                                 setScore(penalty);
                                 if (getScore() < GAMEOVER_SCORE) {
                                     Toast.makeText(getApplicationContext(), " 70점 이하 fail!!", Toast.LENGTH_LONG).show();
-                                    String ackMsg = Protocol.CMD_ACK+Protocol.SEPARATOR+Protocol.GAVE_OVER;
-                                    mBluetoothService.sendMessage(ackMsg);
+//                                    String ackMsg = Protocol.CMD_ACK+Protocol.SEPARATOR+Protocol.GAVE_OVER;
+                                    mBluetoothService.sendMessage(Protocol.CMD_RESUME);
                                     AlertDialog gameOverDialog = crateGameOverDialog();
                                     gameOverDialog.show();
                                 }
-                                String ackMsg = Protocol.CMD_ACK+Protocol.SEPARATOR+Protocol.MISSION_FAIl;
-                                mBluetoothService.sendMessage(ackMsg);
+//                                String ackMsg = Protocol.CMD_ACK+Protocol.SEPARATOR+Protocol.MISSION_FAIl;
+                                mBluetoothService.sendMessage(Protocol.CMD_REWIND);
                                 Toast.makeText(getApplicationContext(), " fail!! 5초전으로 돌림", Toast.LENGTH_SHORT).show();
                                 long videoTime = mVrVideoView.getCurrentPosition();
                                 if (videoTime > REVERSE_TIME) {
@@ -390,6 +393,15 @@ public class VrVideoActivity extends Activity {
         return (mSpeed * TIME_THRESHOLD_SECOND);
     }
 
+    public double getAddSpeed() {
+        double addSpeed;
+        //0.5배 = 70밀리세컨드
+        //1배 = 140 밀리세컨드(seekto를 호출하지 않음)
+        //1.5배 = 210 밀리세컨드
+        addSpeed = mSpeed*10*TIME_GAP;
+        return addSpeed;
+    }
+
     public double getSpeed() {
         return mSpeed;
     }
@@ -422,13 +434,13 @@ public class VrVideoActivity extends Activity {
         Button btnNo = (Button) popupView.findViewById(R.id.btn_no);
 
         if (DBG) {
-            Log.i(TAG, "check - Popup");
+            Log.i(TAG, "Popup");
         }
 
         popupWindow.showAtLocation(mVrVideoView, Gravity.CENTER, 0, 0);
 
         if (DBG) {
-            Log.i(TAG, "check - Popup" + popupWindow.isShowing());
+            Log.i(TAG, "Popup" + popupWindow.isShowing());
         }
 
         btnYes.setOnClickListener(new Button.OnClickListener(
@@ -436,6 +448,7 @@ public class VrVideoActivity extends Activity {
         ) {
             @Override
             public void onClick(View view) {
+                mBluetoothService.sendMessage(Protocol.CMD_STOP);
                 togglePause();
                 mVrVideoView.seekTo(0);
                 finish();
@@ -570,8 +583,6 @@ public class VrVideoActivity extends Activity {
 
         long prevCount=0;
         long currCount=0;
-        long currTime = 0;
-        long prevTime = 0;
         /**
          * Update the UI every frame.
          */
@@ -579,19 +590,17 @@ public class VrVideoActivity extends Activity {
         //change onNewFrame for play speed control with speed factor from bluetooth
         public void onNewFrame() {
             if (!isPaused) {
-                double speed = getSpeed();
-                currTime = mVrVideoView.getCurrentPosition();
-                Log.d(TAG, "====== speed = " + speed + ", currTime = " + currTime + ", prevTime = " + prevTime + " =======");
-                currCount = currTime/TIME_THRESHOLD_FRAME_UPDATE;
-                if (speed != 1.0) {
-                    double deltaTime = currTime - prevTime;
-                    deltaTime *= speed;
-                    Log.d(TAG, "deltaTime = " + deltaTime);
-                    currTime += (long)deltaTime;
-                    mVrVideoView.seekTo(currTime);
-                }
                 prevTime = currTime;
-                prevCount = currCount;
+                long addSpeed = (long) getAddSpeed();
+                Log.i(TAG, "check - videoPosition(speed) = " + addSpeed);
+                long videoPosition = mVrVideoView.getCurrentPosition();
+                if (speed != 140) {
+                    videoPosition = (long)prevTime + addSpeed;
+                    mVrVideoView.seekTo(videoPosition);
+
+                }
+                Log.i(TAG, "check - videoPosition = " + videoPosition);
+                currTime = videoPosition;
             }
         }
 

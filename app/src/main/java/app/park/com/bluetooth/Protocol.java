@@ -14,6 +14,8 @@ public interface Protocol {
     public static final String CMD_PAUSE = "pause";
     public static final String CMD_STOP  = "stop";
     public static final String CMD_GAMERUN  = "gamerun";
+    public static final String CMD_REWIND  = "rewind";
+    public static final String CMD_RESUME  = "resume";
     public static final String CMD_ACK  = "ack";
 
     public static final int  INDEX_CMD = 0;
