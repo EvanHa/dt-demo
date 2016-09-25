@@ -28,6 +28,7 @@ import app.park.com.bluetooth.BluetoothHandler;
 import app.park.com.bluetooth.BluetoothService;
 import app.park.com.bluetooth.Constants;
 import app.park.com.bluetooth.Protocol;
+import app.park.com.task.TaskValidator;
 
 import static app.park.com.R.layout.popup;
 
@@ -323,65 +324,16 @@ public class VrVideoActivity extends Activity {
                             //6. 게임 종료 팝업 & 다시할지 여부 체크
                             //score 계산을 위해서 arr. 던져주고 감점되는 값을 받아옴
                             //getPenalty는 도민이가 정의한 class의 임시명
-                            validateTask(arr, mVrVideoView.getCurrentPosition());
+                            int penalty = TaskValidator.validate(arr, mVrVideoView.getCurrentPosition());
+                            if(penalty != 0) {
+                                setScore(penalty);
+                            }
                         }
                     }
                 }
                 break;
         }
     }
-
-
-    public static int safeLongToInt(long l) {
-        if (l < Integer.MIN_VALUE || l > Integer.MAX_VALUE) {
-            throw new IllegalArgumentException
-                    (l + " cannot be cast to int without changing its value.");
-        }
-        return (int) l;
-    }
-
-
-
-
-    public static boolean task1 = false;
-    // 시나리오 체크
-    public void validateTask(String[] arr, long currentTime) {
-        int second = safeLongToInt(currentTime / 1000);
-        Log.d(TAG, "########currentTime = " + currentTime);
-        Log.d(TAG, "########currentTime(s) = " + second);
-
-		/*
-			cmd////velocity////handle[0,1,2]////깜빡이[0,1,2]////엑셀[0,1]////브레이크[0,1]
-
-			handle
-			0=직진, 1=좌회전, 2=우회전
-
-			깜빡이
-			0=좌 신호, 1=중립, 2=우 신호
-
-			엑셀, 브레이크
-			0=안누름, 1=누름
-		 */
-
-        // 10~12초 사이에 엑셀 눌렀는지 체크
-        if (10 <= second && second <= 12) {
-            if(arr[4].equals("1")) {
-                task1 = true;
-            }
-            Log.d(TAG, "######## 10~12 sec. task1 = " + task1);
-
-        }
-        // 13초에 task1 수행여부에 따라 감점
-        if (second == 13) {
-            if(! task1) {
-                setScore(-5);
-                Log.d(TAG, "######## score  -= -5");
-            }
-        }
-    }
-
-
-
 
     protected void pauseVideo() {
         mVrVideoView.pauseVideo();
