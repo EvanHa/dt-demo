@@ -126,7 +126,9 @@ public class ControlActivity extends Activity implements SensorEventListener,
 	public static int HANDLE_STATUS2 = 0;
 	public static int TURN_SIGNAL_STATUS2 = 0;
 
-	public Handler timerHandler = new Handler();
+    private boolean isBackPressed = false;
+
+    public Handler timerHandler = new Handler();
 	public Runnable timerRunnable = new Runnable() {
 		public void run() {
 			timerHandler.postDelayed(this, 1000);
@@ -268,8 +270,9 @@ public class ControlActivity extends Activity implements SensorEventListener,
 
 						// vr쪽 나갔으면 여기도 메인으로 나감
 						if(msg.equals("stop")) {
-							Intent intent = new Intent(getApplicationContext(), MainActivity.class);
-							startActivity(intent);
+							finish();
+							//Intent intent = new Intent(getApplicationContext(), MainActivity.class);
+							//startActivity(intent);
 						}
 
 						// 메시지가 미션페일이면 속도 0으로 하고 toast
@@ -281,7 +284,7 @@ public class ControlActivity extends Activity implements SensorEventListener,
 						// resume: when score is below 70 point, select resume or finish button on control panel
 						if(msg.equals("resume")) {
 							Toast.makeText(getApplicationContext(), "70점 이하", Toast.LENGTH_SHORT).show();
-							onBackPressed();
+							//onBackPressed();
 						}
 						break;
 					case Constants.MESSAGE_WRITE:
@@ -818,41 +821,43 @@ public class ControlActivity extends Activity implements SensorEventListener,
 	@Override
 	public void onBackPressed() {
 
-		LayoutInflater layoutInflater
-				= (LayoutInflater) getBaseContext()
-				.getSystemService(LAYOUT_INFLATER_SERVICE);
-		final View popupView = layoutInflater.inflate(popup, null);
-		final PopupWindow popupWindow = new PopupWindow(
-				popupView,
-				WindowManager.LayoutParams.WRAP_CONTENT,
-				WindowManager.LayoutParams.WRAP_CONTENT);
-		// PopupWindow 위에서 Button의 Click이 가능하도록 setTouchable(true);
-		popupWindow.setTouchable(true);
-		// PopupWindow 상의 View의 Button 연결
-		Button btnYes = (Button) popupView.findViewById(R.id.btn_yes);
-		Button btnNo = (Button) popupView.findViewById(R.id.btn_no);
+        if (isBackPressed == false) {
+            LayoutInflater layoutInflater
+                    = (LayoutInflater) getBaseContext()
+                    .getSystemService(LAYOUT_INFLATER_SERVICE);
+            final View popupView = layoutInflater.inflate(popup, null);
+            final PopupWindow popupWindow = new PopupWindow(
+                    popupView,
+                    WindowManager.LayoutParams.WRAP_CONTENT,
+                    WindowManager.LayoutParams.WRAP_CONTENT);
+            // PopupWindow 위에서 Button의 Click이 가능하도록 setTouchable(true);
+            popupWindow.setTouchable(true);
+            // PopupWindow 상의 View의 Button 연결
+            Button btnYes = (Button) popupView.findViewById(R.id.btn_yes);
+            Button btnNo = (Button) popupView.findViewById(R.id.btn_no);
 
-		popupWindow.showAtLocation(this.getWindow().getDecorView(), Gravity.CENTER, 0, 0);
+            popupWindow.showAtLocation(this.getWindow().getDecorView(), Gravity.CENTER, 0, 0);
 
-		btnYes.setOnClickListener(new Button.OnClickListener(
+            btnYes.setOnClickListener(new Button.OnClickListener(
 
-		) {
-			@Override
-			public void onClick(View view) {
-				// 정지 메시지 보냄
-				mBluetoothService.sendMessage("stop////1");
+            ) {
+                @Override
+                public void onClick(View view) {
+                    // 정지 메시지 보냄
+                    mBluetoothService.sendMessage("stop////1");
 
-				Intent intent = new Intent(getApplicationContext(), MainActivity.class);
-				startActivity(intent);
-			}
-		});
+                    Intent intent = new Intent(getApplicationContext(), MainActivity.class);
+                    startActivity(intent);
+                }
+            });
 
-		btnNo.setOnClickListener(new View.OnClickListener() {
-			@Override
-			public void onClick(View view) {
-				popupWindow.dismiss();
-			}
-		});
+            btnNo.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    popupWindow.dismiss();
+                }
+            });
+        }
 	}
 
 	public void sendMessage(String log, String cmd) {
