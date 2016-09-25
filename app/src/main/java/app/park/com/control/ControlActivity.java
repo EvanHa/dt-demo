@@ -496,9 +496,9 @@ public class ControlActivity extends Activity implements SensorEventListener,
 									velocity = velocity.subtract(VELOCITY_INCREASE);
 //									Log.d(TAG, "자연 속도감소 -0.1");
 
-									// 속도가 0.5보다 아래면 0.5으로 보정
+									// 속도가 0.5보다 아래면 0으로 보정
 									if(velocity.compareTo(VELOCITY_DEFAULT) < 0) {
-										velocity = VELOCITY_DEFAULT;
+										velocity = VELOCITY_MIN;
 									}
 //									mBluetoothService.sendMessage("gamerun////" + velocity.doubleValue() + "////" + score);
 //									Log.d(TAG, "gamerun////" + velocity + "////" + score);
@@ -610,9 +610,9 @@ public class ControlActivity extends Activity implements SensorEventListener,
 									// 1초당 0.1씩 감소
 									velocity = velocity.subtract(VELOCITY_INCREASE);
 
-									// 속도가 0.5보다 아래면 0.5으로 보정
+									// 속도가 0.5보다 아래면 0으로 보정
 									if(velocity.compareTo(VELOCITY_DEFAULT) < 0) {
-										velocity = VELOCITY_DEFAULT;
+										velocity = VELOCITY_MIN;
 									}
 //									mBluetoothService.sendMessage("gamerun////" + velocity.doubleValue() + "////" + score);
 //									Log.d(TAG, "gamerun////" + velocity + "////" + score);
