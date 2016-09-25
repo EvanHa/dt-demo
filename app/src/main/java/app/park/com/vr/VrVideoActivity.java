@@ -59,7 +59,7 @@ public class VrVideoActivity extends Activity {
     public static final String TAG = VrVideoActivity.class.getSimpleName();
     public static final boolean DBG = true;
 
-    public static final boolean USE_ASSET_PATH = false;
+    public static final boolean USE_ASSET_PATH = true;
     private static final String DEFAULT_VIDEO_NAME = "car.mp4";
 
     /**
@@ -92,8 +92,8 @@ public class VrVideoActivity extends Activity {
     public static final int LOAD_VIDEO_STATUS_SUCCESS = 1;
     public static final int LOAD_VIDEO_STATUS_ERROR = 2;
     public static final int TIME_THRESHOLD_SECOND = 1000;
-    public static final int TIME_THRESHOLD_FRAME_UPDATE = 500;
-    public static final double DEFAULT_SPEED = 0.0;
+    public static final int TIME_THRESHOLD_FRAME_UPDATE = 200;
+    public static final double DEFAULT_SPEED = 0.5;
     public static final double MAX_SPEED = 1.0;
 
     private int loadVideoStatus;
@@ -402,8 +402,8 @@ public class VrVideoActivity extends Activity {
 
 //        if (speed > 0) { // 입력값이 양수
         if (mSpeed >= 0) { // 기존값이 없거나, 있었다고 하면 Default + (speed - 0.1)
-//            mSpeed = (DEFAULT_SPEED + (speed - 0.1));
-            mSpeed = speed;
+            mSpeed = (DEFAULT_SPEED + (speed));
+            //mSpeed = speed;
         }
         if (mSpeed > MAX_SPEED) { // MAX Speed를 초과하지는 못하도록 설정
             mSpeed = MAX_SPEED;
@@ -417,7 +417,7 @@ public class VrVideoActivity extends Activity {
         return (mSpeed * TIME_THRESHOLD_SECOND);
     }
 
-    public double getSpeedToSecond() {
+    public double getSpeed() {
         return mSpeed;
     }
 
@@ -595,6 +595,10 @@ public class VrVideoActivity extends Activity {
             togglePause();
         }
 
+        long prevCount=0;
+        long currCount=0;
+        long currTime = 0;
+        long prevTime = 0;
         /**
          * Update the UI every frame.
          */
@@ -602,31 +606,19 @@ public class VrVideoActivity extends Activity {
         //change onNewFrame for play speed control with speed factor from bluetooth
         public void onNewFrame() {
             if (!isPaused) {
-
-                //1초에 15번 정도 호출됨
-                //0.5배면 7.5 번 정도를 느리게 호출하고
-                //1.5배면 7.5번 정도를 빠르게 호출하면 될 듯
-                //1000에 15번이면 한 번 onNewFrame에 66 정도의 시간을 소요한다
-
-                //0.5배의 경우 videoPosition -= 30;로 current 시간에서 0~60 사이의 값을 마이너스
-                //1배는 seekTo 실행 없이 진행
-                //1.5배는 0.5배일 때 마이너스 해주는 value 계산해서 동일한 값을 더해주면 된다
-
-                //1초에 onNewFrame이 15번 실행되니 onNewFrame 한 번 실행동안
-                // 데이터가 과거로 가지않을 0~60 값 사이의 value를 15번 중에 몇 번을 빼줄지 결정해서
-                //TIME_THRESHOLD_FRAME_UPDATE 값을 결정한다 (30정도가 적당하지 않을까?)
-
-//                mCurrCount = (int)videoPosition/TIME_THRESHOLD_FRAME_UPDATE;
-//                if (((mCurrCount-mPrevCount) > 0)) {
-                long speed = (long) getSpeedToMilliSecond();
-                long videoPosition = mVrVideoView.getCurrentPosition();
-//                long videoPosition = mVrVideoView.getDuration();
-                if (speed != 0) {
-                    videoPosition += speed;
-                    mVrVideoView.seekTo(videoPosition);
+                double speed = getSpeed();
+                currTime = mVrVideoView.getCurrentPosition();
+                Log.d(TAG, "====== speed = " + speed + ", currTime = " + currTime + ", prevTime = " + prevTime + " =======");
+                currCount = currTime/TIME_THRESHOLD_FRAME_UPDATE;
+                if (speed != 1.0) {
+                    double deltaTime = currTime - prevTime;
+                    deltaTime *= speed;
+                    Log.d(TAG, "deltaTime = " + deltaTime);
+                    currTime += (long)deltaTime;
+                    mVrVideoView.seekTo(currTime);
                 }
-//                }
-//                mPrevCount = mCurrCount;
+                prevTime = currTime;
+                prevCount = currCount;
             }
         }
 
