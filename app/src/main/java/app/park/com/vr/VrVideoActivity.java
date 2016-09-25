@@ -123,6 +123,7 @@ public class VrVideoActivity extends Activity {
     //selection of video
     private static int selectedVideo = 1;
     private static boolean isPlaying = false;
+    private static boolean isGameOver = false;
 
     /**
      * By default, the video will start playing as soon as it is loaded. This can be changed by using
@@ -316,7 +317,7 @@ public class VrVideoActivity extends Activity {
                         }
                     }
                     if (isPlaying == false) { // 비디오 Pasue 상태
-                        if (speed > 0) { // speed 가 0보다 크면 엑셀을 누른 상태
+                        if (speed > 0 && (isGameOver==false)) { // speed 가 0보다 크면 엑셀을 누른 상태
                             playVideo();
                         }
                     } else { // 비디오 Play 상태
@@ -337,6 +338,7 @@ public class VrVideoActivity extends Activity {
                                 setScore(penalty);
                                 if (getScore() < GAMEOVER_SCORE) {
                                     pauseVideo();
+                                    isGameOver = true;
                                     Toast.makeText(getApplicationContext(), " 70점 이하 fail!!", Toast.LENGTH_LONG).show();
 //                                    String ackMsg = Protocol.CMD_ACK+Protocol.SEPARATOR+Protocol.GAVE_OVER;
                                     mBluetoothService.sendMessage(Protocol.CMD_RESUME);
@@ -572,6 +574,7 @@ public class VrVideoActivity extends Activity {
         currTime = 0;
         Log.d(TAG, "[TEST] current position = " + mVrVideoView.getCurrentPosition() );
         resetScore();
+        isGameOver = false;
     }
 
     /**
@@ -734,7 +737,7 @@ public class VrVideoActivity extends Activity {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
 
         builder.setTitle("GameOver");
-        builder.setMessage("다시 시작 하시겠습니까?");
+        builder.setMessage("다시 시작 하시겠습니까?\nNo를 선택하시면 종료됩니다.");
         //builder.setIcon(R.drawable.);  <-- dialog tile 옆 아이콘
 
         // msg 는 그저 String 타입의 변수, tv 는 onCreate 메서드에 글을 뿌려줄 TextView
@@ -746,7 +749,11 @@ public class VrVideoActivity extends Activity {
 
         builder.setNegativeButton("No", new DialogInterface.OnClickListener(){
             public void onClick(DialogInterface dialog, int whichButton){
-                onBackPressed();
+                mBluetoothService.sendMessage(Protocol.CMD_STOP);
+                pauseVideo();
+                mVrVideoView.seekTo(0);
+                currTime = 0;
+                finish();
             }
         });
 

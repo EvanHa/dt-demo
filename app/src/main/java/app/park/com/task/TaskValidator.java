@@ -310,7 +310,7 @@ public class TaskValidator {
 
     public static boolean checkStart(String[] arr) {
         boolean result = false;
-        if (arr[Protocol.INDEX_ACCEL] == Protocol.ACCEL_ON) {
+        if (arr[Protocol.INDEX_ACCEL].equals(Protocol.ACCEL_ON)) {
             result = true;
         }
         return result;
@@ -318,7 +318,7 @@ public class TaskValidator {
 
     public static boolean checkStop(String[] arr) {
         boolean result = false;
-        if (arr[Protocol.INDEX_BREAK] == Protocol.BREAK_ON) {
+        if (arr[Protocol.INDEX_BREAK].equals(Protocol.BREAK_ON)) {
             result = true;
         }
         return result;
@@ -326,8 +326,8 @@ public class TaskValidator {
 
     public static boolean checkTurnLeft(String[] arr) {
         boolean result = false;
-        if (arr[Protocol.INDEX_SIGNALLIGHT] == Protocol.SIGNALLIGHT_LEFT &&
-                arr[Protocol.INDEX_HANDLE] == Protocol.HANDLE_LEFT) {
+        if (arr[Protocol.INDEX_SIGNALLIGHT].equals(Protocol.SIGNALLIGHT_LEFT) &&
+                arr[Protocol.INDEX_HANDLE].equals(Protocol.HANDLE_LEFT)) {
             result = true;
         }
         return result;
@@ -335,8 +335,8 @@ public class TaskValidator {
 
     public static boolean checkTurnRight(String[] arr) {
         boolean result = false;
-        if (arr[Protocol.INDEX_SIGNALLIGHT] == Protocol.SIGNALLIGHT_RIGHT
-                && arr[Protocol.INDEX_HANDLE] == Protocol.HANDLE_RIGHT) {
+        if (arr[Protocol.INDEX_SIGNALLIGHT].equals(Protocol.SIGNALLIGHT_RIGHT)
+                && arr[Protocol.INDEX_HANDLE].equals(Protocol.HANDLE_RIGHT)) {
             result = true;
         }
         return result;
