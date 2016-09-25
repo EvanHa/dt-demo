@@ -297,6 +297,7 @@ public class VrVideoActivity extends Activity {
             case Protocol.CMD_STOP:
                 pauseVideo();
                 mVrVideoView.seekTo(0);
+                currTime = 0;
                 finish();
                 break;
 
@@ -341,18 +342,23 @@ public class VrVideoActivity extends Activity {
                                     mBluetoothService.sendMessage(Protocol.CMD_RESUME);
                                     AlertDialog gameOverDialog = crateGameOverDialog();
                                     gameOverDialog.show();
-                                }
-//                                String ackMsg = Protocol.CMD_ACK+Protocol.SEPARATOR+Protocol.MISSION_FAIl;
-                                mBluetoothService.sendMessage(Protocol.CMD_REWIND);
-                                Toast.makeText(getApplicationContext(), " fail!! 5초전으로 돌림", Toast.LENGTH_SHORT).show();
-                                long videoTime = mVrVideoView.getCurrentPosition();
-                                if (videoTime > REVERSE_TIME) {
-                                    videoTime -= REVERSE_TIME;
                                 } else {
-                                    videoTime = 0;
+//                                String ackMsg = Protocol.CMD_ACK+Protocol.SEPARATOR+Protocol.MISSION_FAIl;
+                                    mBluetoothService.sendMessage(Protocol.CMD_REWIND);
+                                    Toast.makeText(getApplicationContext(), " fail!! 5초전으로 돌림", Toast.LENGTH_SHORT).show();
+                                    long videoTime = mVrVideoView.getCurrentPosition();
+                                    Log.d(TAG, "[TEST] origin current time : " + videoTime);
+                                    if (videoTime > REVERSE_TIME) {
+                                        videoTime -= REVERSE_TIME;
+                                    } else {
+                                        videoTime = 0;
+                                    }
+                                    Log.d(TAG, "[TEST] before 5second time : " + videoTime);
+                                    mVrVideoView.seekTo(videoTime);
+                                    currTime = videoTime;
+                                    Log.d(TAG, "[TEST] now video time : " + mVrVideoView.getCurrentPosition());
+                                    pauseVideo();
                                 }
-                                mVrVideoView.seekTo(videoTime);
-                                pauseVideo();
                             }
                         }
                     }
@@ -413,7 +419,7 @@ public class VrVideoActivity extends Activity {
     private void setScore(int penalty) {
         score += penalty;
         if (DBG) {
-            Log.d(TAG, "Change score : " + score);
+            Log.d(TAG, "[TEST] Change score : " + score);
         }
     }
 
@@ -461,6 +467,7 @@ public class VrVideoActivity extends Activity {
                 mBluetoothService.sendMessage(Protocol.CMD_STOP);
                 togglePause();
                 mVrVideoView.seekTo(0);
+                currTime = 0;
                 finish();
             }
         });
@@ -487,6 +494,7 @@ public class VrVideoActivity extends Activity {
 
         long progressTime = savedInstanceState.getLong(STATE_PROGRESS_TIME);
         mVrVideoView.seekTo(progressTime);
+        currTime = progressTime;
 
         isPaused = savedInstanceState.getBoolean(STATE_IS_PAUSED);
         if (isPaused) {
@@ -559,7 +567,10 @@ public class VrVideoActivity extends Activity {
 
     public void reset() {
         //togglePause();
+        Log.d(TAG, "[TEST] ========== RESET ==============");
         mVrVideoView.seekTo(0);
+        currTime = 0;
+        Log.d(TAG, "[TEST] current position = " + mVrVideoView.getCurrentPosition() );
         resetScore();
     }
 
@@ -611,7 +622,6 @@ public class VrVideoActivity extends Activity {
                 if (speed != 140) {
                     videoPosition = (long)prevTime + addSpeed;
                     mVrVideoView.seekTo(videoPosition);
-
                 }
                 Log.i(TAG, "check - videoPosition = " + videoPosition);
                 currTime = videoPosition;
@@ -625,6 +635,7 @@ public class VrVideoActivity extends Activity {
         @Override
         public void onCompletion() {
             mVrVideoView.seekTo(0);
+            currTime = 0;
         }
     }
 
