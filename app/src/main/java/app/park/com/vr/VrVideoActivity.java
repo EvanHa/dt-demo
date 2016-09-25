@@ -364,11 +364,13 @@ public class VrVideoActivity extends Activity {
     protected void pauseVideo() {
         mVrVideoView.pauseVideo();
         isPlaying = false;
+        isPaused = true;
     }
 
     protected void playVideo() {
         mVrVideoView.playVideo();
         isPlaying = true;
+        isPaused = false;
     }
 
     //set speed factor(multiplication of 1000 to make factor as millisecond)
@@ -488,7 +490,7 @@ public class VrVideoActivity extends Activity {
 
         isPaused = savedInstanceState.getBoolean(STATE_IS_PAUSED);
         if (isPaused) {
-            mVrVideoView.pauseVideo();
+            pauseVideo();
         }
     }
 
@@ -540,11 +542,13 @@ public class VrVideoActivity extends Activity {
                 Log.i("TAG", "********Status-playvideo********");
             }
             mVrVideoView.playVideo();
+            isPlaying = true;
         } else {
             if (DBG) {
                 Log.i("TAG", "********Status-pausevideo********");
             }
             mVrVideoView.pauseVideo();
+            isPlaying = false;
         }
         isPaused = !isPaused;
     }
@@ -571,7 +575,8 @@ public class VrVideoActivity extends Activity {
         public void onLoadSuccess() {
             Log.i(TAG, "Sucessfully loaded video " + mVrVideoView.getDuration());
             loadVideoStatus = LOAD_VIDEO_STATUS_SUCCESS;
-            mVrVideoView.pauseVideo();
+            //mVrVideoView.pauseVideo();
+            pauseVideo();
         }
 
         /**
