@@ -569,12 +569,12 @@ public class VrVideoActivity extends Activity {
 
     public void reset() {
         //togglePause();
+        isGameOver = false;
         Log.d(TAG, "[TEST] ========== RESET ==============");
         mVrVideoView.seekTo(0);
         currTime = 0;
         Log.d(TAG, "[TEST] current position = " + mVrVideoView.getCurrentPosition() );
         resetScore();
-        isGameOver = false;
     }
 
     /**
@@ -750,7 +750,7 @@ public class VrVideoActivity extends Activity {
         builder.setNegativeButton("No", new DialogInterface.OnClickListener(){
             public void onClick(DialogInterface dialog, int whichButton){
                 mBluetoothService.sendMessage(Protocol.CMD_STOP);
-                pauseVideo();
+                isGameOver = false;
                 mVrVideoView.seekTo(0);
                 currTime = 0;
                 finish();
