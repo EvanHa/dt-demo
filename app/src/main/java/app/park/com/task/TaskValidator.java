@@ -341,4 +341,25 @@ public class TaskValidator {
         }
         return result;
     }
+
+    public static void reInit() {
+        task1 = false;
+        task2 = false;
+        task3 = false;
+        task4 = false;
+        task5 = false;
+        task6 = false;
+        task7 = false;
+        task8 = false;
+        task9 = false;
+        task10 = false;
+        task11 = false;
+        task12 = false;
+        task13 = false;
+        task14 = false;
+        task15 = false;
+        task16 = false;
+        task17 = false;
+        task18 = false;
+    }
 }

@@ -356,6 +356,7 @@ public class VrVideoActivity extends Activity {
                                         videoTime = 0;
                                     }
                                     Log.d(TAG, "[TEST] before 5second time : " + videoTime);
+                                    TaskValidator.reInit();
                                     mVrVideoView.seekTo(videoTime);
                                     currTime = videoTime;
                                     Log.d(TAG, "[TEST] now video time : " + mVrVideoView.getCurrentPosition());
@@ -379,6 +380,11 @@ public class VrVideoActivity extends Activity {
         mVrVideoView.playVideo();
         isPlaying = true;
         isPaused = false;
+    }
+
+    protected void resetVideo() {
+        mVrVideoView.seekTo(0);
+        currTime = 0;
     }
 
     //set speed factor(multiplication of 1000 to make factor as millisecond)
@@ -568,13 +574,11 @@ public class VrVideoActivity extends Activity {
     }
 
     public void reset() {
-        //togglePause();
-        isGameOver = false;
         Log.d(TAG, "[TEST] ========== RESET ==============");
-        mVrVideoView.seekTo(0);
-        currTime = 0;
-        Log.d(TAG, "[TEST] current position = " + mVrVideoView.getCurrentPosition() );
+        isGameOver = false;
+        resetVideo();
         resetScore();
+        TaskValidator.reInit();
     }
 
     /**
