@@ -845,18 +845,21 @@ public class ControlActivity extends Activity implements SensorEventListener,
                 public void onClick(View view) {
                     // 정지 메시지 보냄
                     mBluetoothService.sendMessage("stop////1");
-
-                    Intent intent = new Intent(getApplicationContext(), MainActivity.class);
-                    startActivity(intent);
+                    isBackPressed = false;
+                    finish();
+                    //Intent intent = new Intent(getApplicationContext(), MainActivity.class);
+                    //startActivity(intent);
                 }
             });
 
             btnNo.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
+                    isBackPressed = false;
                     popupWindow.dismiss();
                 }
             });
+            isBackPressed = true;
         }
 	}
 
