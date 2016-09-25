@@ -125,6 +125,8 @@ public class VrVideoActivity extends Activity {
     private static boolean isPlaying = false;
     private static boolean isGameOver = false;
 
+    private boolean isBackPressed = false;
+
     /**
      * By default, the video will start playing as soon as it is loaded. This can be changed by using
      * {@link VrVideoView#pauseVideo()} after loading the video.
@@ -442,50 +444,54 @@ public class VrVideoActivity extends Activity {
 
     @Override
     public void onBackPressed() {
+        if (isBackPressed == false) {
+            LayoutInflater layoutInflater
+                    = (LayoutInflater) getBaseContext()
+                    .getSystemService(LAYOUT_INFLATER_SERVICE);
+            final View popupView = layoutInflater.inflate(popup, null);
+            final PopupWindow popupWindow = new PopupWindow(
+                    popupView,
+                    WindowManager.LayoutParams.WRAP_CONTENT,
+                    WindowManager.LayoutParams.WRAP_CONTENT);
+            // PopupWindow 위에서 Button의 Click이 가능하도록 setTouchable(true);
+            popupWindow.setTouchable(true);
+            // PopupWindow 상의 View의 Button 연결
+            Button btnYes = (Button) popupView.findViewById(R.id.btn_yes);
+            Button btnNo = (Button) popupView.findViewById(R.id.btn_no);
 
-        LayoutInflater layoutInflater
-                = (LayoutInflater) getBaseContext()
-                .getSystemService(LAYOUT_INFLATER_SERVICE);
-        final View popupView = layoutInflater.inflate(popup, null);
-        final PopupWindow popupWindow = new PopupWindow(
-                popupView,
-                WindowManager.LayoutParams.WRAP_CONTENT,
-                WindowManager.LayoutParams.WRAP_CONTENT);
-        // PopupWindow 위에서 Button의 Click이 가능하도록 setTouchable(true);
-        popupWindow.setTouchable(true);
-        // PopupWindow 상의 View의 Button 연결
-        Button btnYes = (Button) popupView.findViewById(R.id.btn_yes);
-        Button btnNo = (Button) popupView.findViewById(R.id.btn_no);
-
-        if (DBG) {
-            Log.i(TAG, "Popup");
-        }
-
-        popupWindow.showAtLocation(mVrVideoView, Gravity.CENTER, 0, 0);
-
-        if (DBG) {
-            Log.i(TAG, "Popup" + popupWindow.isShowing());
-        }
-
-        btnYes.setOnClickListener(new Button.OnClickListener(
-
-        ) {
-            @Override
-            public void onClick(View view) {
-                mBluetoothService.sendMessage(Protocol.CMD_STOP);
-                togglePause();
-                mVrVideoView.seekTo(0);
-                currTime = 0;
-                finish();
+            if (DBG) {
+                Log.i(TAG, "Popup");
             }
-        });
 
-        btnNo.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                popupWindow.dismiss();
+            popupWindow.showAtLocation(mVrVideoView, Gravity.CENTER, 0, 0);
+
+            if (DBG) {
+                Log.i(TAG, "Popup" + popupWindow.isShowing());
             }
-        });
+
+            btnYes.setOnClickListener(new Button.OnClickListener(
+
+            ) {
+                @Override
+                public void onClick(View view) {
+                    mBluetoothService.sendMessage(Protocol.CMD_STOP);
+                    togglePause();
+                    mVrVideoView.seekTo(0);
+                    currTime = 0;
+                    isBackPressed = false;
+                    finish();
+                }
+            });
+
+            btnNo.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    popupWindow.dismiss();
+                    isBackPressed = false;
+                }
+            });
+            isBackPressed = true;
+        }
     }
 
     @Override
