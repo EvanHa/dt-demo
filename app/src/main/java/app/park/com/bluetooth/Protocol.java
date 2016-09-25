@@ -6,7 +6,7 @@ package app.park.com.bluetooth;
 public interface Protocol {
     // msg protocol
     // Case command is play -> play////playnumber[1,2,3]
-    // Case command is control -> contorl////speed////handle[0,1]////signalLight[0,1,2]////accel[0,1]////break[0,1]
+    // Case command is control -> contorl////speed////handle[0,1,2]////signalLight[0,1,2]////accel[0,1]////break[0,1]
     // Case old version command -> cmd////velocity////score
 
     public static final String SEPARATOR  = "////";
@@ -29,6 +29,20 @@ public interface Protocol {
     public static final String PLAY_VIDEO_NUMBER1 = "1";
     public static final String PLAY_VIDEO_NUMBER2 = "2";
     public static final String PLAY_VIDEO_NUMBER3 = "3";
+
+    public static final String HANDLE_STRAIGHT = "0";
+    public static final String HANDLE_LEFT = "1";
+    public static final String HANDLE_RIGHT = "2";
+
+    public static final String SIGNALLIGHT_LEFT = "0";
+    public static final String SIGNALLIGHT_NONE = "1";
+    public static final String SIGNALLIGHT_RIGHT = "2";
+
+    public static final String BREAK_OFF = "0";
+    public static final String BREAK_ON = "1";
+
+    public static final String ACCEL_OFF = "0";
+    public static final String ACCEL_ON = "1";
 
     public static final int MISSION_FAIl = 1;
     public static final int GAVE_OVER = 2;
