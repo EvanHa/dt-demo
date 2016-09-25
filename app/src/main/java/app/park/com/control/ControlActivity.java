@@ -79,12 +79,19 @@ public class ControlActivity extends Activity implements SensorEventListener,
 	static float btnAccElapsedTime = 0;
 	static float btnBrakeElapsedTime = 0;
 
-	static final BigDecimal VELOCITY_DEFAULT = new BigDecimal("0.5"); // 기본 속도
-	static final BigDecimal VELOCITY_MIN = new BigDecimal("0"); // 최소 속도
-	static final BigDecimal VELOCITY_MAX = new BigDecimal("1"); // 최대 속도
+
+	// -------------- 속도 관련 변수 --------------------------
+	static final BigDecimal VELOCITY_DEFAULT = new BigDecimal("0"); // 기본 속도
+	static final BigDecimal VELOCITY_MIN_INCREASE = new BigDecimal("0.5"); // 가속시 최소 속도 0.5
+	static final BigDecimal VELOCITY_MIN_DECREASE = new BigDecimal("0"); // 감속시 최소 속도 0
+	static final BigDecimal VELOCITY_MAX = new BigDecimal("1.5"); // 최대 속도
+
 	static final BigDecimal VELOCITY_INCREASE = new BigDecimal("0.1"); // 속도 증가값
+
 	static final BigDecimal VELOCITY_BREAK_DECREASE = new BigDecimal("0.5"); // 속도 감소값 (브레이크)
 	static final BigDecimal VELOCITY_DECREASE = new BigDecimal("0.1"); // 속도 감소값
+	// -------------- 속도 관련 변수 --------------------------
+
 
 	static final String BLUETHOOTH_MESSAGE_SEPARATOR = "////";
 	static final String STATUS_GAMERUN = "gamerun";
@@ -267,7 +274,7 @@ public class ControlActivity extends Activity implements SensorEventListener,
 
 						// 메시지가 미션페일이면 속도 0으로 하고 toast
 						if(msg.equals("rewind")) {
-							velocity = VELOCITY_MIN;
+							velocity = VELOCITY_DEFAULT;
 							Toast.makeText(getApplicationContext(), "5초 전", Toast.LENGTH_SHORT).show();
 						}
 
@@ -447,8 +454,8 @@ public class ControlActivity extends Activity implements SensorEventListener,
 							}, 0, 1000);
 
 							// 0.5보다 작으면 0.5로 보정
-							if(velocity.compareTo(VELOCITY_DEFAULT) < 0) {
-								velocity = VELOCITY_DEFAULT;
+							if(velocity.compareTo(VELOCITY_MIN_INCREASE) < 0) {
+								velocity = VELOCITY_MIN_INCREASE;
 							}
 
 							// 1초당 0.1씩 속도 증가
@@ -503,7 +510,7 @@ public class ControlActivity extends Activity implements SensorEventListener,
 
 									// 속도가 0.5보다 아래면 0으로 보정
 									if(velocity.compareTo(VELOCITY_DEFAULT) < 0) {
-										velocity = VELOCITY_MIN;
+										velocity = VELOCITY_MIN_DECREASE;
 									}
 //									mBluetoothService.sendMessage("gamerun////" + velocity.doubleValue() + "////" + score);
 //									Log.d(TAG, "gamerun////" + velocity + "////" + score);
@@ -577,9 +584,9 @@ public class ControlActivity extends Activity implements SensorEventListener,
 								velocity = velocity.subtract(VELOCITY_BREAK_DECREASE);
 //								Log.d(TAG, "브레이크 속도감소 -0.5");
 
-								// 속도가 0.5보다 아래면 0으로 보정
+								// 속도가 0보다 아래면 0으로 보정
 								if(velocity.compareTo(VELOCITY_DEFAULT) < 0) {
-									velocity = VELOCITY_MIN;
+									velocity = VELOCITY_MIN_DECREASE;
 								}
 //								mBluetoothService.sendMessage("gamerun////" + velocity.doubleValue() + "////" + score);
 //							}
@@ -617,7 +624,7 @@ public class ControlActivity extends Activity implements SensorEventListener,
 
 									// 속도가 0.5보다 아래면 0으로 보정
 									if(velocity.compareTo(VELOCITY_DEFAULT) < 0) {
-										velocity = VELOCITY_MIN;
+										velocity = VELOCITY_MIN_DECREASE;
 									}
 //									mBluetoothService.sendMessage("gamerun////" + velocity.doubleValue() + "////" + score);
 //									Log.d(TAG, "gamerun////" + velocity + "////" + score);
