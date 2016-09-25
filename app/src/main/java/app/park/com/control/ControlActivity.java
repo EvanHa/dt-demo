@@ -80,7 +80,7 @@ public class ControlActivity extends Activity implements SensorEventListener,
 	static float btnBrakeElapsedTime = 0;
 
 	static final BigDecimal VELOCITY_DEFAULT = new BigDecimal("0.5"); // 기본 속도
-	static final BigDecimal VELOCITY_MIN = new BigDecimal("0"); // 최대 속도
+	static final BigDecimal VELOCITY_MIN = new BigDecimal("0"); // 최소 속도
 	static final BigDecimal VELOCITY_MAX = new BigDecimal("1"); // 최대 속도
 	static final BigDecimal VELOCITY_INCREASE = new BigDecimal("0.1"); // 속도 증가값
 	static final BigDecimal VELOCITY_BREAK_DECREASE = new BigDecimal("0.5"); // 속도 감소값 (브레이크)
@@ -267,9 +267,10 @@ public class ControlActivity extends Activity implements SensorEventListener,
 
 						// 메시지가 미션페일이면 속도 0으로 하고 toast
 						if(msg.equals("rewind")) {
-							velocity = VELOCITY_DEFAULT;
+							velocity = VELOCITY_MIN;
 							Toast.makeText(getApplicationContext(), "5초 전", Toast.LENGTH_SHORT).show();
 						}
+
 						// resume: when score is below 70 point, select resume or finish button on control panel
 						if(msg.equals("resume")) {
 							Toast.makeText(getApplicationContext(), "70점 이하", Toast.LENGTH_SHORT).show();
@@ -445,14 +446,18 @@ public class ControlActivity extends Activity implements SensorEventListener,
 								}
 							}, 0, 1000);
 
+							// 0.5보다 작으면 0.5로 보정
+							if(velocity.compareTo(VELOCITY_DEFAULT) < 0) {
+								velocity = VELOCITY_DEFAULT;
+							}
 
-								// 1초당 0.1씩 속도 증가
-								velocity = velocity.add(VELOCITY_INCREASE);
+							// 1초당 0.1씩 속도 증가
+							velocity = velocity.add(VELOCITY_INCREASE);
 //								Log.d(TAG, "엑셀 속도증가 +0.1");
 
-								// 최대 속도는 1.5임
-								if(velocity.compareTo(VELOCITY_MAX) > 0) {
-									velocity = VELOCITY_MAX;
+							// 최대 속도는 1.5임
+							if(velocity.compareTo(VELOCITY_MAX) > 0) {
+								velocity = VELOCITY_MAX;
 //									Log.d(TAG, "최대속도 제한 1.5");
 //								}
 
