@@ -46,4 +46,7 @@
 
     <string name="info_msg_select_video">Please select video you want to play on the controller</string>
     <string name="info_msg_bt_disconnected">Bluetooth is disconnected</string>
+
+    <!-- Error -->
+    <string name="error_not_supported_bluetooth">Bluetooth is not supported.</string>
 </resources>
