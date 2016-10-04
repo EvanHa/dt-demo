@@ -1,17 +1,6 @@
 package app.park.com.control;
 
-import java.math.BigDecimal;
-import java.util.Timer;
-import java.util.TimerTask;
-
-import app.park.com.MainActivity;
-import app.park.com.R;
-import app.park.com.bluetooth.BluetoothHandler;
-import app.park.com.bluetooth.BluetoothService;
-import app.park.com.bluetooth.Constants;
-
 import android.app.Activity;
-import android.content.Intent;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
@@ -31,6 +20,15 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.PopupWindow;
 import android.widget.Toast;
+
+import java.math.BigDecimal;
+import java.util.Timer;
+import java.util.TimerTask;
+
+import app.park.com.R;
+import app.park.com.bluetooth.BluetoothHandler;
+import app.park.com.bluetooth.BluetoothService;
+import app.park.com.bluetooth.Constants;
 
 import static app.park.com.R.layout.popup;
 
@@ -76,7 +74,7 @@ public class ControlActivity extends Activity implements SensorEventListener,
 	static float btnBrakeElapsedTime = 0;
 
 	// -------------- 속도 관련 변수 --------------------------
-	static final BigDecimal VELOCITY_DEFAULT = new BigDecimal("1. 0"); // 기본 속도  (시작속도)
+	static final BigDecimal VELOCITY_DEFAULT = new BigDecimal("1.0"); // 기본 속도  (시작속도)
 	static final BigDecimal VELOCITY_MIN_INCREASE = new BigDecimal("1.0"); // 가속시 최소 속도 1.0 (속도가 0일때, 가속하면 1.0부터 시작함)
 	static final BigDecimal VELOCITY_MIN_DECREASE = new BigDecimal("0"); // 감속시 최소 속도 0 (0까지 줄어듬)
 	static final BigDecimal VELOCITY_MAX = new BigDecimal("1.5"); // 최대 속도
@@ -157,8 +155,7 @@ public class ControlActivity extends Activity implements SensorEventListener,
 					case Constants.MESSAGE_READ: // 블루투스 메시지 수신
 						// vr쪽 나갔으면 여기도 메인으로 나감
 						if(msg.equals("stop")) {
-							Intent intent = new Intent(getApplicationContext(), MainActivity.class);
-							startActivity(intent);
+							finish();
 						}
 
 						// 메시지가 미션페일이면 속도 0으로 하고 toast
@@ -619,9 +616,7 @@ public class ControlActivity extends Activity implements SensorEventListener,
 			public void onClick(View view) {
 				// 정지 메시지 보냄
 				mBluetoothService.sendMessage("stop////1");
-
-				Intent intent = new Intent(getApplicationContext(), MainActivity.class);
-				startActivity(intent);
+				finish();
 			}
 		});
 
