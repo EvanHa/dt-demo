@@ -240,7 +240,7 @@ public class ControlActivity extends Activity implements SensorEventListener,
 								TURN_SIGNAL_STATUS = 2;
 							}
 
-						// 아래로 스와이프
+							// 아래로 스와이프
 						} else if (deltaX > MIN_DISTANCE) {
 							// 우 신호였으면 중립으로
 							if(TURN_SIGNAL_STATUS==2) {
