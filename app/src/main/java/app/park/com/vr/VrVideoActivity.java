@@ -10,12 +10,7 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.util.Log;
 import android.util.Pair;
-import android.view.Gravity;
-import android.view.LayoutInflater;
-import android.view.View;
 import android.view.WindowManager;
-import android.widget.Button;
-import android.widget.PopupWindow;
 import android.widget.Toast;
 
 import com.google.vr.sdk.widgets.video.VrVideoEventListener;
@@ -31,8 +26,6 @@ import app.park.com.bluetooth.BluetoothService;
 import app.park.com.bluetooth.Constants;
 import app.park.com.bluetooth.Protocol;
 import app.park.com.task.TaskValidator;
-
-import static app.park.com.R.layout.popup;
 
 /**
  * A test activity that renders a 360 video using {@link VrVideoView}.
@@ -62,8 +55,10 @@ public class VrVideoActivity extends Activity {
     public static final String TAG = VrVideoActivity.class.getSimpleName();
     public static final boolean DBG = true;
 
-    public static final boolean USE_ASSET_PATH = true;
-    private static final String DEFAULT_VIDEO_NAME = "car.mp4";
+    public static final boolean USE_ASSET_PATH = false;
+    private static final String DEFAULT_VIDEO_NAME = "car1.mp4";
+    private static final String SECOND_VIDEO_NAME = "car2.mp4";
+    private static final String THIRD_VIDEO_NAME = "car3.mp4";
 
     /**
      * Preserve the video's state when rotating the phone.
@@ -77,14 +72,8 @@ public class VrVideoActivity extends Activity {
      */
     private static final String STATE_VIDEO_DURATION = "videoDuration";
 
-    // msg protocol : cmd////velocity////handle[0,1]////signalLight[0,1,2]////accel[0,1]////break[0,1]
-    private static final int  PROTOCOL_MSG_CMD = 0;
-    private static final int  PROTOCOL_MSG_PLAY_NUM = 1; // If command is play, next value is play video number
+    //speed value sequence in array from bluetooth
     private static final int  PROTOCOL_MSG_SPEED = 1;
-    private static final int  PROTOCOL_MSG_STEER = 2;
-    private static final int  PROTOCOL_MSG_SIGNALLIGHT = 3;
-    private static final int  PROTOCOL_MSG_ACCEL = 4;
-    private static final int  PROTOCOL_MSG_BREAK = 5;
 
     /**
      * Arbitrary constants and variable to track load status. In this example, this variable should
@@ -94,45 +83,45 @@ public class VrVideoActivity extends Activity {
     public static final int LOAD_VIDEO_STATUS_UNKNOWN = 0;
     public static final int LOAD_VIDEO_STATUS_SUCCESS = 1;
     public static final int LOAD_VIDEO_STATUS_ERROR = 2;
-    public static final int TIME_THRESHOLD_SECOND = 1000;
-    public static final int TIME_THRESHOLD_FRAME_UPDATE = 200;
+
+    //speed factor
     public static final double DEFAULT_SPEED = 0.0;
     public static final double MAX_SPEED = 1.5;
+    private static double speed;
+    private static double preSpeed;
+    private static long currTime = 0;
+    private static long prevTime = 0;
+
+
+    //speed factor to control speed (get it through bluetooth panel)
+    private double mSpeed;
+
+
+    //time
+    public static final int TIME_THRESHOLD_SECOND = 1000;
     public static final long REVERSE_TIME = 5000; // 5 seconds
-    public static final int GAMEOVER_SCORE = 70;
     public static final int TIME_GAP = 14;
 
+    //game score
+    public static final int GAMEOVER_SCORE = 70;
+    private static int score = 100;
+
+    //video
     private int loadVideoStatus;
     private Uri fileUri;    // Tracks the file to be loaded across the lifetime of this app.
     private Options videoOptions = new Options();  // Configuration information for the video.
     private VideoLoaderTask backgroundVideoLoaderTask;
     private VrVideoView mVrVideoView;  // The video view and its custom UI elements.
 
-    //create speed factor to control speed (get it through bluetooth panel)
-    private double mSpeed;
-    private static int score = 100;           //game score
-
-    //previous values to check changes of factors(speed, turn signal light, steering wheel, accel., break)
-    private static double preSpeed;
-    private static long currTime = 0;
-    private static long prevTime = 0;
-
-    //speed, turn signal light, steering wheel, accel., break
-    private static double speed;
-
-    //selection of video
-    private static int selectedVideo = 1;
+    //status boolean
     private static boolean isPlaying = false;
     private static boolean isGameOver = false;
-
-    private boolean isBackPressed = false;
+    private boolean isPaused = false;
 
     /**
      * By default, the video will start playing as soon as it is loaded. This can be changed by using
      * {@link VrVideoView#pauseVideo()} after loading the video.
      */
-    private boolean isPaused = false;
-
     private BluetoothService mBluetoothService = null;
     private BluetoothHandler mHandler = null;
     private BluetoothHandler.ActivityCb mActivityCb = null;
@@ -145,11 +134,13 @@ public class VrVideoActivity extends Activity {
         // Bind input and output objects for the view.
         mVrVideoView = (VrVideoView) findViewById(R.id.video_view);
         mVrVideoView.setEventListener(new ActivityEventListener());
-        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON); // 화면 자동 꺼짐 방지
+        //화면 자동 꺼짐 방지
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
         loadVideoStatus = LOAD_VIDEO_STATUS_UNKNOWN;
 
-        mBluetoothService = BluetoothService.getInstance();                    // Bluetooth Service
+        //Bluetooth Service
+        mBluetoothService = BluetoothService.getInstance();
         handleIntent(getIntent());
     }
 
@@ -207,8 +198,6 @@ public class VrVideoActivity extends Activity {
     @Override
     public void onStart() {
         super.onStart();
-        Log.i("TAG", "********Status-Start********");
-
         mHandler = new BluetoothHandler();
         mActivityCb = new BluetoothHandler.ActivityCb() {
             @Override
@@ -230,9 +219,6 @@ public class VrVideoActivity extends Activity {
                     case Constants.MESSAGE_READ:
                         if(msg != null) {
                             String[] arr = msg.split(Protocol.SEPARATOR);
-                            Log.i("TAG", "*******" + msg);
-                            Log.i("TAG", "*******" + arr.length);
-                            Log.i("TAG", "*******" + arr[0]);
 
                             //명령어 실행 from bluetooth
                             executeCommand(arr);
@@ -256,17 +242,27 @@ public class VrVideoActivity extends Activity {
         Toast.makeText(getApplicationContext(), R.string.info_msg_select_video, Toast.LENGTH_SHORT).show();
     }
 
+    //set selected video path
     private Uri getVideoPATH(String number) {
         Uri path = null;
         switch (number) {
             case Protocol.PLAY_VIDEO_NUMBER1:
                 path = Uri.parse(DEFAULT_VIDEO_NAME);
+                if (USE_ASSET_PATH == false) {
+                    path = Uri.parse(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MOVIES).getAbsolutePath() + File.separator + DEFAULT_VIDEO_NAME);
+                }
                 break;
             case Protocol.PLAY_VIDEO_NUMBER2:
-                path = Uri.parse(DEFAULT_VIDEO_NAME);
+                path = Uri.parse(SECOND_VIDEO_NAME);
+                if (USE_ASSET_PATH == false) {
+                    path = Uri.parse(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MOVIES).getAbsolutePath() + File.separator + SECOND_VIDEO_NAME);
+                }
                 break;
             case Protocol.PLAY_VIDEO_NUMBER3:
-                path = Uri.parse(DEFAULT_VIDEO_NAME);
+                path = Uri.parse(THIRD_VIDEO_NAME);
+                if (USE_ASSET_PATH == false) {
+                    path = Uri.parse(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MOVIES).getAbsolutePath() + File.separator + THIRD_VIDEO_NAME);
+                }
                 break;
             default:
                 Log.w(TAG, "Video number has error. So we should use default value.");
@@ -274,9 +270,6 @@ public class VrVideoActivity extends Activity {
                 break;
         }
 
-        if (USE_ASSET_PATH == false) {
-            path = Uri.parse(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MOVIES).getAbsolutePath() + File.separator + DEFAULT_VIDEO_NAME);
-        }
         return path;
     }
 
@@ -284,7 +277,6 @@ public class VrVideoActivity extends Activity {
         // msg protocol : cmd////velocity////handle[0,1,2]////signalLight[0,1,2]////accel[0,1]////break[0,1]
         // play||||1,2,3 -> 1,2,3번 동영상 재생
         // stop||||1,2,3 -> 현재 동영상 멈춤
-        // cmd|||||40||||90 -> 속도 40, 점수 90
         String cmd = arr[Protocol.INDEX_CMD];
         switch (cmd) {
             case Protocol.CMD_PLAY:
@@ -312,8 +304,6 @@ public class VrVideoActivity extends Activity {
                         speed = Double.parseDouble((arr[PROTOCOL_MSG_SPEED]));
                         //speed가 기존과 다른 경우만 전송
                         if (preSpeed != speed) {
-                            if(DBG){Log.i(TAG, "chekc - prespeed" + preSpeed);}
-                            if(DBG){Log.i(TAG, "chekc - speed" + speed);}
                             preSpeed = speed;
                             setSpeed(speed);
                         }
@@ -334,7 +324,6 @@ public class VrVideoActivity extends Activity {
                             //5. 비디오 포즈
                             //6. 게임 종료 팝업 & 다시할지 여부 체크
                             //score 계산을 위해서 arr. 던져주고 감점되는 값을 받아옴
-                            //getPenalty는 도민이가 정의한 class의 임시명
                             int penalty = TaskValidator.validate(arr, mVrVideoView.getCurrentPosition());
                             if(penalty != 0) {
                                 setScore(penalty);
@@ -342,26 +331,21 @@ public class VrVideoActivity extends Activity {
                                     pauseVideo();
                                     isGameOver = true;
                                     Toast.makeText(getApplicationContext(), " 70점 이하 fail!!", Toast.LENGTH_LONG).show();
-//                                    String ackMsg = Protocol.CMD_ACK+Protocol.SEPARATOR+Protocol.GAVE_OVER;
                                     mBluetoothService.sendMessage(Protocol.CMD_RESUME);
                                     AlertDialog gameOverDialog = crateGameOverDialog();
                                     gameOverDialog.show();
                                 } else {
-//                                String ackMsg = Protocol.CMD_ACK+Protocol.SEPARATOR+Protocol.MISSION_FAIl;
                                     mBluetoothService.sendMessage(Protocol.CMD_REWIND);
                                     Toast.makeText(getApplicationContext(), " fail!! 5초전으로 돌림", Toast.LENGTH_SHORT).show();
                                     long videoTime = mVrVideoView.getCurrentPosition();
-                                    Log.d(TAG, "[TEST] origin current time : " + videoTime);
                                     if (videoTime > REVERSE_TIME) {
                                         videoTime -= REVERSE_TIME;
                                     } else {
                                         videoTime = 0;
                                     }
-                                    Log.d(TAG, "[TEST] before 5second time : " + videoTime);
                                     TaskValidator.reInit();
                                     mVrVideoView.seekTo(videoTime);
                                     currTime = videoTime;
-                                    Log.d(TAG, "[TEST] now video time : " + mVrVideoView.getCurrentPosition());
                                     pauseVideo();
                                 }
                             }
@@ -389,15 +373,12 @@ public class VrVideoActivity extends Activity {
         currTime = 0;
     }
 
-    //set speed factor(multiplication of 1000 to make factor as millisecond)
+    //set speed factor
     private void setSpeed(double speed) {
         //0.5가 기본 속도 (0.5배 느림)
         //1이 정상 속도
-        //1.5가 빠른 속도 (1.5배 빠름
-        //상기 속도에 맞춰서 speed 조절이 필요함
-
-//        if (speed > 0) { // 입력값이 양수
-        if (mSpeed >= 0) { // 기존값이 없거나, 있었다고 하면 Default + (speed - 0.1)
+        //1.5가 빠른 속도 (1.5배 빠름)
+        if (mSpeed >= 0) {
             mSpeed = speed;
         }
         if (mSpeed > MAX_SPEED) { // MAX Speed를 초과하지는 못하도록 설정
@@ -408,10 +389,7 @@ public class VrVideoActivity extends Activity {
         }
     }
 
-    public double getSpeedToMilliSecond() {
-        return (mSpeed * TIME_THRESHOLD_SECOND);
-    }
-
+    //calculate milliseconds for adding on current duration of video with speed factor
     public double getAddSpeed() {
         double addSpeed;
         //0.5배 = 70밀리세컨드
@@ -421,16 +399,9 @@ public class VrVideoActivity extends Activity {
         return addSpeed;
     }
 
-    public double getSpeed() {
-        return mSpeed;
-    }
-
     //set score
     private void setScore(int penalty) {
         score += penalty;
-        if (DBG) {
-            Log.d(TAG, "[TEST] Change score : " + score);
-        }
     }
 
     //get current score
@@ -438,60 +409,15 @@ public class VrVideoActivity extends Activity {
         return score;
     }
 
+    //reset score
     public void resetScore() {
         score = 100;
     }
 
     @Override
     public void onBackPressed() {
-        if (isBackPressed == false) {
-            LayoutInflater layoutInflater
-                    = (LayoutInflater) getBaseContext()
-                    .getSystemService(LAYOUT_INFLATER_SERVICE);
-            final View popupView = layoutInflater.inflate(popup, null);
-            final PopupWindow popupWindow = new PopupWindow(
-                    popupView,
-                    WindowManager.LayoutParams.WRAP_CONTENT,
-                    WindowManager.LayoutParams.WRAP_CONTENT);
-            // PopupWindow 위에서 Button의 Click이 가능하도록 setTouchable(true);
-            popupWindow.setTouchable(true);
-            // PopupWindow 상의 View의 Button 연결
-            Button btnYes = (Button) popupView.findViewById(R.id.btn_yes);
-            Button btnNo = (Button) popupView.findViewById(R.id.btn_no);
-
-            if (DBG) {
-                Log.i(TAG, "Popup");
-            }
-
-            popupWindow.showAtLocation(mVrVideoView, Gravity.CENTER, 0, 0);
-
-            if (DBG) {
-                Log.i(TAG, "Popup" + popupWindow.isShowing());
-            }
-
-            btnYes.setOnClickListener(new Button.OnClickListener(
-
-            ) {
-                @Override
-                public void onClick(View view) {
-                    mBluetoothService.sendMessage(Protocol.CMD_STOP);
-                    togglePause();
-                    mVrVideoView.seekTo(0);
-                    currTime = 0;
-                    isBackPressed = false;
-                    finish();
-                }
-            });
-
-            btnNo.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    popupWindow.dismiss();
-                    isBackPressed = false;
-                }
-            });
-            isBackPressed = true;
-        }
+            AlertDialog backPressedDialog = createBackPressedDialog();
+            backPressedDialog.show();
     }
 
     @Override
@@ -519,9 +445,6 @@ public class VrVideoActivity extends Activity {
     @Override
     protected void onResume() {
         super.onResume();
-        if (DBG) {
-            Log.i("TAG", "********Status-Resume********");
-        }
         if (mVrVideoView != null) {
             mVrVideoView.resumeRendering(); // Resume the 3D rendering.
         }
@@ -530,9 +453,6 @@ public class VrVideoActivity extends Activity {
     @Override
     protected void onPause() {
         super.onPause();
-        if (DBG) {
-            Log.i("TAG", "********Status-Pause********");
-        }
         // Prevent the view from rendering continuously when in the background.
         if (mVrVideoView != null) {
             mVrVideoView.pauseRendering();
@@ -549,9 +469,6 @@ public class VrVideoActivity extends Activity {
 
     @Override
     protected void onDestroy() {
-        if (DBG) {
-            Log.i("TAG", "********Status-Destroy********");
-        }
         if (mVrVideoView != null) {
             mVrVideoView.shutdown(); // Destroy the widget and free memory.
         }
@@ -560,15 +477,9 @@ public class VrVideoActivity extends Activity {
 
     private void togglePause() {
         if (isPaused) {
-            if (DBG) {
-                Log.i("TAG", "********Status-playvideo********");
-            }
             mVrVideoView.playVideo();
             isPlaying = true;
         } else {
-            if (DBG) {
-                Log.i("TAG", "********Status-pausevideo********");
-            }
             mVrVideoView.pauseVideo();
             isPlaying = false;
         }
@@ -580,7 +491,6 @@ public class VrVideoActivity extends Activity {
     }
 
     public void reset() {
-        Log.d(TAG, "[TEST] ========== RESET ==============");
         isGameOver = false;
         resetVideo();
         resetScore();
@@ -619,8 +529,6 @@ public class VrVideoActivity extends Activity {
             togglePause();
         }
 
-        long prevCount=0;
-        long currCount=0;
         /**
          * Update the UI every frame.
          */
@@ -630,13 +538,11 @@ public class VrVideoActivity extends Activity {
             if (!isPaused) {
                 prevTime = currTime;
                 long addSpeed = (long) getAddSpeed();
-                Log.i(TAG, "check - videoPosition(speed) = " + addSpeed);
                 long videoPosition = mVrVideoView.getCurrentPosition();
                 if (speed != 140) {
                     videoPosition = (long)prevTime + addSpeed;
                     mVrVideoView.seekTo(videoPosition);
                 }
-                Log.i(TAG, "check - videoPosition = " + videoPosition);
                 currTime = videoPosition;
             }
         }
@@ -678,13 +584,6 @@ public class VrVideoActivity extends Activity {
                 options.inputFormat = Options.FORMAT_DEFAULT;
                 options.inputType = Options.TYPE_MONO;
                 videoOptions = options;
-                //bluetooth에서 select한 video를 가져온다
-//                String videoName = getVideo();
-//                videoUri = Uri.parse(videoName);
-
-                //test 용 uri
-                videoUri = Uri.parse(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MOVIES).getAbsolutePath() + File.separator + DEFAULT_VIDEO_NAME);
-
                 result = true;
             } else {
                 videoUri = fileInformation[0].first;
@@ -706,18 +605,14 @@ public class VrVideoActivity extends Activity {
                 Log.d(TAG, "onPostExecute!!!");
                 if (aBoolean) {
                     mVrVideoView.setDisplayMode(VrVideoView.DisplayMode.FULLSCREEN_STEREO);
-                    //mVrVideoView.setStereoModeButtonEnabled(false);
                     mVrVideoView.setInfoButtonEnabled(false);
                     mVrVideoView.setFullscreenButtonEnabled(false);
-                    //bluetooth에서 select한 video를 가져온다
                     String videoName = DEFAULT_VIDEO_NAME;
                     if (DBG) { Log.d(TAG, "### loadVideoFromAsset()"); }
                     mVrVideoView.loadVideoFromAsset(videoName, videoOptions);
-                    //mVrVideoView.loadVideo(videoUri, videoOptions);
                 } else {
                     if (DBG) { Log.d(TAG, "### Video path : " + videoUri.toString()); }
                     mVrVideoView.setDisplayMode(VrVideoView.DisplayMode.FULLSCREEN_STEREO);
-                    //mVrVideoView.setStereoModeButtonEnabled(false);
                     mVrVideoView.setInfoButtonEnabled(false);
                     mVrVideoView.setFullscreenButtonEnabled(false);
                     if (USE_ASSET_PATH) {
@@ -743,14 +638,13 @@ public class VrVideoActivity extends Activity {
         }
     }
 
+    //pop up for gameover
     private AlertDialog crateGameOverDialog() {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
 
         builder.setTitle("GameOver");
         builder.setMessage("다시 시작 하시겠습니까?\nNo를 선택하시면 종료됩니다.");
-        //builder.setIcon(R.drawable.);  <-- dialog tile 옆 아이콘
 
-        // msg 는 그저 String 타입의 변수, tv 는 onCreate 메서드에 글을 뿌려줄 TextView
         builder.setPositiveButton("Yes", new DialogInterface.OnClickListener(){
             public void onClick(DialogInterface dialog, int whichButton){
                 reset();
@@ -762,6 +656,32 @@ public class VrVideoActivity extends Activity {
                 mBluetoothService.sendMessage(Protocol.CMD_STOP);
                 reset();
                 finish();
+            }
+        });
+
+        AlertDialog dialog = builder.create();
+        return dialog;
+    }
+
+    //pop up for back key
+    private AlertDialog createBackPressedDialog() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+
+        builder.setTitle("Quit");
+        builder.setMessage("Are you sure you want to quit??");
+
+        builder.setPositiveButton("Yes", new DialogInterface.OnClickListener(){
+            public void onClick(DialogInterface dialog, int whichButton){
+                mBluetoothService.sendMessage(Protocol.CMD_STOP);
+                togglePause();
+                mVrVideoView.seekTo(0);
+                currTime = 0;
+                finish();
+            }
+        });
+
+        builder.setNegativeButton("No", new DialogInterface.OnClickListener(){
+            public void onClick(DialogInterface dialog, int whichButton){
             }
         });
 
