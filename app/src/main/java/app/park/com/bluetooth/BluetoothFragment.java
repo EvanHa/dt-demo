@@ -1,19 +1,3 @@
-/*
- * Copyright (C) 2014 The Android Open Source Project
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package app.park.com.bluetooth;
 
 import android.app.ActionBar;
@@ -38,17 +22,17 @@ import app.park.com.R;
 import app.park.com.vr.VrVideoActivity;
 
 /**
- * This fragment controls Bluetooth to communicate with other devices.
+ * 블루투스 관련 버튼 및 UI 처리 Fragment
  */
 public class BluetoothFragment extends Fragment {
     public static final String TAG = BluetoothFragment.class.getSimpleName();
-    public static final boolean DBG = true;
+    public static final boolean DBG = false;
 
     // Intent request codes
-    private static final int REQUEST_CONNECT_DEVICE_SECURE = 1;
-    private static final int REQUEST_CONNECT_DEVICE_INSECURE = 2;
-    private static final int REQUEST_ENABLE_BT = 3;
-    private static final int BLUETOOTH_DISCOVERY_TIME = 300;
+    private static final int REQUEST_CONNECT_DEVICE_SECURE = 1; // 블루투스 연결 옵션
+    private static final int REQUEST_CONNECT_DEVICE_INSECURE = 2; // 블루투스 연결 옵션
+    private static final int REQUEST_ENABLE_BT = 3; // 블루투스 사용 요청
+    private static final int BLUETOOTH_DISCOVERY_TIME = 300; // 블루투스 디바이스로 검색 가능하도록 설정 최대시간
 
     // Layout Views
     private Button mDiscoverableButton;
@@ -58,22 +42,25 @@ public class BluetoothFragment extends Fragment {
     /**
      * Member object for the Bluetooth services
      */
-    private BluetoothService mBluetoothService = null;
-    private BluetoothHandler mHandler = null;
-    private BluetoothHandler.ActivityCb mActivityCb = null;
-    private String mConnectedDeviceName = null;
+    private BluetoothService mBluetoothService = null; // 블루투스 서비스
+    private BluetoothHandler mHandler = null; // 블루투스 핸들러
+    private BluetoothHandler.ActivityCb mActivityCb = null; // UI 콜백
+    private String mConnectedDeviceName = null; // 블루투스로 연결된 디바이스 이름
+    private boolean isBluetoothEnabled = false; // 블루투스가 활성화 되어있는지 확인
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setHasOptionsMenu(true);
 
-        mBluetoothService = BluetoothService.getInstance();
+        mBluetoothService = BluetoothService.getInstance(); // 블루투스 서비스를 제어하는 인스턴스
         if ((mBluetoothService != null) && (mBluetoothService.isBluetoothSupported())) {
+            // 블루투스를 지원하는 기기인 경우
             if (DBG) { Log.i(TAG, "Bluetooth is supported"); }
         } else {
+            // 블루투스를 지원하지 않는 기기인 경우
             FragmentActivity activity = getActivity();
-            Toast.makeText(activity, "Bluetooth is not available", Toast.LENGTH_LONG).show();
+            Toast.makeText(activity, R.string.error_not_supported_bluetooth, Toast.LENGTH_LONG).show();
             activity.finish();
         }
     }
@@ -81,25 +68,26 @@ public class BluetoothFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.fragment_bluetooth, container, false);
+        return inflater.inflate(R.layout.fragment_bluetooth, container, false); // 블루투스 버튼 화면을 관리
     }
 
     @Override
     public void onViewCreated(View view, Bundle savedInstanceState) {
-        mDiscoverableButton = (Button) view.findViewById(R.id.btn_bt_discoverable);
-        mConnectButton = (Button) view.findViewById(R.id.btn_bt_connect);
-        mDisConnectButton = (Button) view.findViewById(R.id.btn_bt_disconnect);
+        mDiscoverableButton = (Button) view.findViewById(R.id.btn_bt_discoverable); // 블루투스 디바이스로 검색가능하게 하는 버튼
+        mConnectButton = (Button) view.findViewById(R.id.btn_bt_connect); // 블루투스 기기 연결을 위한 버튼
+        mDisConnectButton = (Button) view.findViewById(R.id.btn_bt_disconnect); //블루투스 기기 연결을 끊기 위한 버튼
     }
 
     @Override
     public void onStart() {
         super.onStart();
-        // If BT is not on, request that it be enabled.
-        // setupBluetooth() will then be called during onActivityResult
-        if (!mBluetoothService.isEnabled()) {
+
+        // 블루투스가 활성화 되지 않은경우, 블루투스를 활성화 시키도록 질의하는 팝업 생성
+        isBluetoothEnabled = mBluetoothService.isEnabled(); // 블루투스가 활성화 되어있는지 확인
+        if (isBluetoothEnabled == false) {
             Intent enableIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
             startActivityForResult(enableIntent, REQUEST_ENABLE_BT);
-        } else { // Otherwise, setup the bt session
+        } else { // 이미 활성화 된 경우, 블루투스 설정
             setupBluetooth();
         }
     }
@@ -108,15 +96,15 @@ public class BluetoothFragment extends Fragment {
     public void onResume() {
         super.onResume();
 
-        // Performing this check in onResume() covers the case in which BT was
-        // not enabled during onStart(), so we were paused to enable it...
-        // onResume() will be called when ACTION_REQUEST_ENABLE activity returns.
+        // 블루투스 서비스가 정상동작 하는지 체크
         if (mBluetoothService != null) {
-            // Only if the state is STATE_NONE, do we know that we haven't started already
-            if (mBluetoothService.getState() == BluetoothService.STATE_NONE) {
-                // Start the Bluetooth services
+            if ((isBluetoothEnabled==true) && (mBluetoothService.getState() == BluetoothService.STATE_NONE)) {
+                // 블루투스 사용준비가 된경우, 서비스를 시작한다.
                 mBluetoothService.start();
             }
+        } else { // 블루투스 서비스가 null인경우 다시 instance를 얻는다.
+            mBluetoothService = null;
+            mBluetoothService = BluetoothService.getInstance();
         }
     }
 
@@ -272,6 +260,10 @@ public class BluetoothFragment extends Fragment {
                 if (resultCode == Activity.RESULT_OK) {
                     // Bluetooth is now enabled, so set up bluetooth
                     setupBluetooth();
+                    isBluetoothEnabled = mBluetoothService.isEnabled();
+                    if (isBluetoothEnabled == true) {
+                        mBluetoothService.start();
+                    }
                 } else {
                     // Be rejected using bluetooth
                     Toast.makeText(getActivity(), R.string.bt_not_enabled_leaving, Toast.LENGTH_SHORT).show();

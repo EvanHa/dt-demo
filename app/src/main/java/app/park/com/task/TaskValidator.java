@@ -2,22 +2,39 @@ package app.park.com.task;
 
 import android.util.Log;
 
+import app.park.com.bluetooth.Protocol;
 import app.park.com.vr.VrVideoActivity;
 
 public class TaskValidator {
     public static final String TAG = VrVideoActivity.class.getSimpleName();
 
-    public static boolean task1 = false;
-    public static boolean task2 = false;
-    public static boolean task3 = false;
+    public static int MISSION_CLEAR = 0;
+    public static int MISSION_FAIL_START = -5; //신호등 초록불인데 출발 하지 않았을 때
+    public static int MISSION_FAIL_STOP = -5; //신호등이 빨간불이거나 앞에 차가 있는데 멈추지 않았을 때
+    public static int MISSION_FAIL_TURN = -10; //좌측 코너링 or 좌측으로 차선 변경을 할 때 방향지시등과 핸들을 틀지 않았을 때
+
+    public static boolean task1 = false; // 0:05
+    public static boolean task2 = false; // 0:14 - 0:19
+    public static boolean task3 = false; // 0:45
     public static boolean task4 = false;
     public static boolean task5 = false;
     public static boolean task6 = false;
     public static boolean task7 = false;
+    public static boolean task8 = false;
+    public static boolean task9 = false;
+    public static boolean task10 = false;
+    public static boolean task11 = false;
+    public static boolean task12 = false;
+    public static boolean task13 = false;
+    public static boolean task14 = false;
+    public static boolean task15 = false;
+    public static boolean task16 = false;
+    public static boolean task17 = false;
+    public static boolean task18 = false;
 
     public static int validate(String[] arr, long currentTime) {
         int second = safeLongToInt(currentTime / 1000);
-        int returnPenalty = 0;
+        int returnPenalty = MISSION_CLEAR;
         Log.d(TAG, "######## taskValidator - currentTime = " + currentTime);
         Log.d(TAG, "######## taskValidator - currentTime(s) = " + second);
 		/*
@@ -33,134 +50,255 @@ public class TaskValidator {
 			0=안누름, 1=누름
 		 */
 
-        // --------------------- task1 -------------------------------------------
-        // 10~12초 사이에 엑셀 눌렀는지 체크
-        if (10 <= second && second <= 12) {
-            if(arr[4].equals("1")) {
-                task1 = true;
-            }
-            Log.d(TAG, "######## taskValidator - 10~12 sec. task1 = " + task1);
-
+        switch (second) {
+            case 0: //0:00 시작
+                break;
+            case 5: // 0:05 좌회전 - task1
+                if (checkTurnLeft(arr)) {
+                    task1 = true;
+                    returnPenalty = MISSION_CLEAR;
+                }
+                break;
+            case 6: // task1 fail
+                if (task1 == false) {
+                    returnPenalty = MISSION_FAIL_TURN;
+                }
+                break;
+            case 14: // 0:14 - 0:19 정지 - task2
+            case 15:
+            case 16:
+            case 17:
+            case 18:
+            case 19:
+                if (checkStop(arr)) {
+                    task2 = true;
+                    returnPenalty = MISSION_CLEAR;
+                }
+                break;
+            case 20: // task2 fail
+                if (task2 == false) {
+                    returnPenalty = MISSION_FAIL_STOP;
+                }
+                break;
+            case 45: // 0:45 재출발 - task3
+                if (checkStart(arr)) {
+                    task3 = true;
+                    returnPenalty = MISSION_CLEAR;
+                }
+            case 46: // task3 fail
+                if (task3 == false) {
+                    returnPenalty = MISSION_FAIL_START;
+                }
+                break;
+            case 206: // 3:26 우측 차선변경 - task4
+                if (checkTurnRight(arr)) {
+                    task4 = true;
+                    returnPenalty = MISSION_CLEAR;
+                }
+                break;
+            case 207: // task4 fail
+                if (task4 == false) {
+                    returnPenalty = MISSION_FAIL_TURN;
+                }
+                break;
+            case 250: // 4:10- 4:16 감속 및 정지 - task5
+            case 251:
+            case 252:
+            case 253:
+            case 254:
+            case 255:
+            case 256:
+                if (checkStop(arr)) {
+                    task5 = true;
+                    returnPenalty = MISSION_CLEAR;
+                }
+                break;
+            case 257: // task5 fail
+                if (task5 == false) {
+                    returnPenalty = MISSION_FAIL_STOP;
+                }
+                break;
+            case 266: // 4:26 재출발 - task6
+                if (checkStart(arr)) {
+                    task6 = true;
+                    returnPenalty = MISSION_CLEAR;
+                }
+                break;
+            case 267: // task6 fail
+                if (task6 == false) {
+                    returnPenalty = MISSION_FAIL_START;
+                }
+                break;
+            case 270: // 4:30- 4:37 좌회전 - task7
+            case 271:
+            case 272:
+            case 273:
+            case 274:
+            case 275:
+            case 276:
+            case 277:
+                if (checkTurnLeft(arr)) {
+                    task7 = true;
+                    returnPenalty = MISSION_CLEAR;
+                }
+                break;
+            case 278: // task7 fail
+                if (task7 == false) {
+                    returnPenalty = MISSION_FAIL_TURN;
+                }
+                break;
+            case 287: // 4:47 우측방향 차선 변경 - task8
+                if (checkTurnRight(arr)) {
+                    task8 = true;
+                    returnPenalty = MISSION_CLEAR;
+                }
+                break;
+            case 288: // task8 fail
+                if (task8 == false) {
+                    returnPenalty = MISSION_FAIL_TURN;
+                }
+                break;
+            case 292: // 4:52 우측방향 차선 변경 - task9
+                if (checkTurnRight(arr)) {
+                    task9 = true;
+                    returnPenalty = MISSION_CLEAR;
+                }
+                break;
+            case 293: // task9 fail
+                if (task9 == false) {
+                    returnPenalty = MISSION_FAIL_TURN;
+                }
+                break;
+            case 332: // 5:32- 5:36 우회전 - task10
+            case 333:
+            case 334:
+            case 335:
+            case 336:
+                if (checkTurnRight(arr)) {
+                    task10 = true;
+                    returnPenalty = MISSION_CLEAR;
+                }
+                break;
+            case 337: // task10 fail
+                if (task10 == false) {
+                    returnPenalty = MISSION_FAIL_TURN;
+                }
+                break;
+            case 351: // 5:51 우회전 - task11
+                if (checkTurnRight(arr)) {
+                    task11 = true;
+                    returnPenalty = MISSION_CLEAR;
+                }
+                break;
+            case 352: // task11 fail
+                if (task11 == false) {
+                    returnPenalty = MISSION_FAIL_TURN;
+                }
+                break;
+            case 383: // 6:23 정지 - task12
+                if (checkStop(arr)) {
+                    task12 = true;
+                    returnPenalty = MISSION_CLEAR;
+                }
+                break;
+            case 384: // task12 fail
+                if (task12 == false) {
+                    returnPenalty = MISSION_FAIL_STOP;
+                }
+                break;
+            case 420: // 7:00 재출발 - task13
+                if (checkStart(arr)) {
+                    task13 = true;
+                    returnPenalty = MISSION_CLEAR;
+                }
+                break;
+            case 421: // task13 fail
+                if (task13 == false) {
+                    returnPenalty = MISSION_FAIL_START;
+                }
+                break;
+            case 482: // 8:02 좌측 방향 차선 변경 - task14
+                if (checkTurnLeft(arr)) {
+                    task14 = true;
+                    returnPenalty = MISSION_CLEAR;
+                }
+                break;
+            case 483: // task14 fail
+                if (task14 == false) {
+                    returnPenalty = MISSION_FAIL_TURN;
+                }
+                break;
+            case 494: // 8:14 - 8:19 정지 - task15
+            case 495:
+            case 496:
+            case 497:
+            case 498:
+            case 499:
+                if (checkStop(arr)) {
+                    task15 = true;
+                    returnPenalty = MISSION_CLEAR;
+                }
+                break;
+            case 500: // task15 fail
+                if (task15 == false) {
+                    returnPenalty = MISSION_FAIL_STOP;
+                }
+                break;
+            case 617: // 10:17 재출발 - task16
+                if (checkStart(arr)) {
+                    task16 =true;
+                    returnPenalty = MISSION_CLEAR;
+                }
+                break;
+            case 618: // task16 fail
+                if (task16 == false) {
+                    returnPenalty = MISSION_FAIL_START;
+                }
+                break;
+            case 619: // 10:19 - 10:27 좌회전 - task17
+            case 620:
+            case 621:
+            case 622:
+            case 623:
+            case 624:
+            case 625:
+            case 626:
+            case 627:
+                if (checkTurnLeft(arr)) {
+                    task17 = true;
+                    returnPenalty = MISSION_CLEAR;
+                }
+                break;
+            case 628: // task17 fail
+                if (task17 == false) {
+                    returnPenalty = MISSION_FAIL_TURN;
+                }
+                break;
+            case 638: // 10:38 - 10:44 우회전 - task18
+            case 639:
+            case 640:
+            case 641:
+            case 642:
+            case 643:
+            case 644:
+                if (checkTurnRight(arr)) {
+                    task18 = true;
+                    returnPenalty = MISSION_CLEAR;
+                }
+                break;
+            case 645: // task18 fail
+                if (task18 == false) {
+                    returnPenalty = MISSION_FAIL_TURN;
+                }
+                break;
+            case 653: // 10:53 종료
+                break;
+            default:
+                break;
         }
-        // 13초에 task1 수행여부에 따라 감점
-        if (second == 13) {
-            if(! task1) {
-                Log.d(TAG, "######## taskValidator - score  -= -5");
-                returnPenalty = -5;
-            }else {
-                Log.d(TAG, "######## taskValidator - score. task1  OKAY");
-                returnPenalty = 0;
-            }
-        }
-        // --------------------- task1 -------------------------------------------
-
-
-
-
-        // --------------------- task2 -------------------------------------------
-        // 23초에 task(20~22초 사이에 브레이크 누름) 수행여부 판별하여 감점
-        if (20 <= second && second <= 22) {
-            if(arr[5].equals("1")) {
-                task2 = true;
-            }
-            Log.d(TAG, "######## taskValidator - 20~22 sec. task2 = " + task2);
-
-        }
-        // 23초에 task2 수행여부에 따라 감점
-        if (second == 23) {
-            if(! task2) {
-                Log.d(TAG, "######## taskValidator - score. task2-= -5");
-                returnPenalty = -5;
-            }else {
-                Log.d(TAG, "######## taskValidator - score. task2  OKAY");
-                returnPenalty = 0;
-            }
-        }
-        // --------------------- task2 -------------------------------------------
-
-
-
-
-        // --------------------- task3,4 -------------------------------------------
-        // 33초에 task(30~32초 사이에 좌회전 깜빡이, 좌회전 ) 수행여부 판별하여 감점
-        if (30 <= second && second <= 32) {
-            if(arr[2].equals("1")) {
-                task3 = true;
-            }
-            if(arr[3].equals("0")) {
-                task4 = true;
-            }
-            Log.d(TAG, "######## taskValidator - 30~32 sec. task3 = " + task3 + ", task4 = " + task4);
-        }
-        // 33초에 task3 수행여부에 따라 감점
-        if (second == 33) {
-            if(! task3 && ! task4) {
-                Log.d(TAG, "######## taskValidator - score. task3, task4 -= -10");
-                returnPenalty = -10;
-            }else {
-                Log.d(TAG, "######## taskValidator - score. task3, task4  OKAY");
-                returnPenalty = 0;
-            }
-        }
-        // --------------------- task3,4 -------------------------------------------
-
-
-
-
-        // --------------------- task5,6 -------------------------------------------
-        // 43초에 task(40~42초 사이에 우회전 깜빡이, 우회전 ) 수행여부 판별하여 감점
-        if (40 <= second && second <= 42) {
-            if(arr[2].equals("2")) {
-                task5 = true;
-            }
-            if(arr[3].equals("2")) {
-                task6 = true;
-            }
-            Log.d(TAG, "######## taskValidator - 40~42 sec. task5 = " + task5 + ", task6 = " + task6);
-        }
-        // 43초에 task5 수행여부에 따라 감점
-        if (second == 43) {
-            if(! task5 && ! task6) {
-                Log.d(TAG, "######## taskValidator - score. task5, task6 -= -10");
-                returnPenalty = -10;
-            }else {
-                Log.d(TAG, "######## taskValidator - score. task5, task6  OKAY");
-                returnPenalty = 0;
-            }
-        }
-        // --------------------- task5,6 -------------------------------------------
-
-
-
-
-        // --------------------- task7 -------------------------------------------
-        // 53초에 task(50~52초 사이에 좌, 우회전 안함) 수행여부 판별하여 감점
-        if (50 <= second && second <= 52) {
-            if(! arr[2].equals("0")) {
-                task7 = false;
-            }
-            Log.d(TAG, "######## taskValidator - 50~52 sec. task7 = " + task7);
-
-        }
-        // 53초에 task7 수행여부에 따라 감점
-        if (second == 53) {
-            if(! task7) {
-                Log.d(TAG, "######## taskValidator - score. task7-= -10");
-                returnPenalty = -10;
-            }else {
-                Log.d(TAG, "######## taskValidator - score. task7  OKAY");
-                returnPenalty = 0;
-            }
-        }
-        // --------------------- task7 -------------------------------------------
-
-
-
 
         return returnPenalty;
     }
-
-
 
     public static int safeLongToInt(long l) {
         if (l < Integer.MIN_VALUE || l > Integer.MAX_VALUE) {
@@ -168,5 +306,60 @@ public class TaskValidator {
                     (l + " cannot be cast to int without changing its value.");
         }
         return (int) l;
+    }
+
+    public static boolean checkStart(String[] arr) {
+        boolean result = false;
+        if (arr[Protocol.INDEX_ACCEL].equals(Protocol.ACCEL_ON)) {
+            result = true;
+        }
+        return result;
+    }
+
+    public static boolean checkStop(String[] arr) {
+        boolean result = false;
+        if (arr[Protocol.INDEX_BREAK].equals(Protocol.BREAK_ON)) {
+            result = true;
+        }
+        return result;
+    }
+
+    public static boolean checkTurnLeft(String[] arr) {
+        boolean result = false;
+        if (arr[Protocol.INDEX_SIGNALLIGHT].equals(Protocol.SIGNALLIGHT_LEFT) &&
+                arr[Protocol.INDEX_HANDLE].equals(Protocol.HANDLE_LEFT)) {
+            result = true;
+        }
+        return result;
+    }
+
+    public static boolean checkTurnRight(String[] arr) {
+        boolean result = false;
+        if (arr[Protocol.INDEX_SIGNALLIGHT].equals(Protocol.SIGNALLIGHT_RIGHT)
+                && arr[Protocol.INDEX_HANDLE].equals(Protocol.HANDLE_RIGHT)) {
+            result = true;
+        }
+        return result;
+    }
+
+    public static void reInit() {
+        task1 = false;
+        task2 = false;
+        task3 = false;
+        task4 = false;
+        task5 = false;
+        task6 = false;
+        task7 = false;
+        task8 = false;
+        task9 = false;
+        task10 = false;
+        task11 = false;
+        task12 = false;
+        task13 = false;
+        task14 = false;
+        task15 = false;
+        task16 = false;
+        task17 = false;
+        task18 = false;
     }
 }
