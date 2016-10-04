@@ -4,9 +4,9 @@ public class MissionManager {
     public static final String TAG = MissionManager.class.getSimpleName();
 
     public static String currentVideo;
-    public static MissionOne mOne;
-    public static MissionTwo mTwo;
-    public static MissionThree mThree;
+    public static MissionOne mOne = new MissionOne();
+    public static MissionTwo mTwo = new MissionTwo();
+    public static MissionThree mThree = new MissionThree();
 
     public static void setVideoNumber(String number) {
         currentVideo = number;

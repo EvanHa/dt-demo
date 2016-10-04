@@ -55,7 +55,7 @@ public class VrVideoActivity extends Activity {
     public static final String TAG = VrVideoActivity.class.getSimpleName();
     public static final boolean DBG = true;
 
-    public static final boolean USE_ASSET_PATH = false;
+    public static final boolean USE_ASSET_PATH = true;
     private static final String DEFAULT_VIDEO_NAME = "car1.mp4";
     private static final String SECOND_VIDEO_NAME = "car2.mp4";
     private static final String THIRD_VIDEO_NAME = "car3.mp4";
