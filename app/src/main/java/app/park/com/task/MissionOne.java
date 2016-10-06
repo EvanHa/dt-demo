@@ -84,7 +84,7 @@ public class MissionOne extends Mission {
             case 174:
             case 175:
             case 176:
-                if (checkStart(arr)) {
+                if (checkStart(arr)&&checkTurnLeft(arr)) {
                     task3 = true;
                     returnPenalty = MISSION_CLEAR;
                 }
@@ -168,7 +168,7 @@ public class MissionOne extends Mission {
             case 353:
             case 354:
             case 355:
-                if (checkStart(arr)) {
+                if (checkStart(arr)&&checkTurnLeft(arr)) {
                     task8 = true;
                     returnPenalty = MISSION_CLEAR;
                 }
