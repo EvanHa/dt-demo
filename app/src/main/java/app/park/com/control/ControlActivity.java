@@ -76,7 +76,7 @@ public class ControlActivity extends Activity implements SensorEventListener,
 	static float btnBrakeElapsedTime = 0;
 
 	// -------------- 속도 관련 변수 --------------------------
-	static final BigDecimal VELOCITY_DEFAULT = new BigDecimal("1. 0"); // 기본 속도  (시작속도)
+	static final BigDecimal VELOCITY_DEFAULT = new BigDecimal("1.0"); // 기본 속도  (시작속도)
 	static final BigDecimal VELOCITY_MIN_INCREASE = new BigDecimal("1.0"); // 가속시 최소 속도 1.0 (속도가 0일때, 가속하면 1.0부터 시작함)
 	static final BigDecimal VELOCITY_MIN_DECREASE = new BigDecimal("0"); // 감속시 최소 속도 0 (0까지 줄어듬)
 	static final BigDecimal VELOCITY_MAX = new BigDecimal("1.5"); // 최대 속도
@@ -359,8 +359,8 @@ public class ControlActivity extends Activity implements SensorEventListener,
 									// 1초당 0.1씩 감소
 									velocity = velocity.subtract(VELOCITY_INCREASE);
 
-									// 속도가 0.5보다 아래면 0으로 보정
-									if(velocity.compareTo(VELOCITY_DEFAULT) < 0) {
+									// 속도가 0보다 아래면 0으로 보정
+									if(velocity.compareTo(VELOCITY_MIN_DECREASE) < 0) {
 										velocity = VELOCITY_MIN_DECREASE;
 									}
 								}
@@ -408,7 +408,7 @@ public class ControlActivity extends Activity implements SensorEventListener,
 							velocity = velocity.subtract(VELOCITY_BREAK_DECREASE);
 
 							// 속도가 0보다 아래면 0으로 보정
-							if(velocity.compareTo(VELOCITY_DEFAULT) < 0) {
+							if(velocity.compareTo(VELOCITY_MIN_DECREASE) < 0) {
 								velocity = VELOCITY_MIN_DECREASE;
 							}
 						}
@@ -444,7 +444,7 @@ public class ControlActivity extends Activity implements SensorEventListener,
 									velocity = velocity.subtract(VELOCITY_INCREASE);
 
 									// 속도가 0.5보다 아래면 0으로 보정
-									if(velocity.compareTo(VELOCITY_DEFAULT) < 0) {
+									if(velocity.compareTo(VELOCITY_MIN_DECREASE) < 0) {
 										velocity = VELOCITY_MIN_DECREASE;
 									}
 								}
