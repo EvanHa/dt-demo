@@ -25,7 +25,7 @@ import app.park.com.bluetooth.BluetoothHandler;
 import app.park.com.bluetooth.BluetoothService;
 import app.park.com.bluetooth.Constants;
 import app.park.com.bluetooth.Protocol;
-import app.park.com.task.TaskValidator;
+import app.park.com.task.MissionManager;
 
 /**
  * A test activity that renders a 360 video using {@link VrVideoView}.
@@ -55,10 +55,11 @@ public class VrVideoActivity extends Activity {
     public static final String TAG = VrVideoActivity.class.getSimpleName();
     public static final boolean DBG = true;
 
-    public static final boolean USE_ASSET_PATH = false;
+    public static final boolean USE_ASSET_PATH = true;
     private static final String DEFAULT_VIDEO_NAME = "car1.mp4";
     private static final String SECOND_VIDEO_NAME = "car2.mp4";
     private static final String THIRD_VIDEO_NAME = "car3.mp4";
+    private static MissionManager mMissioManager;
 
     /**
      * Preserve the video's state when rotating the phone.
@@ -280,6 +281,7 @@ public class VrVideoActivity extends Activity {
         String cmd = arr[Protocol.INDEX_CMD];
         switch (cmd) {
             case Protocol.CMD_PLAY:
+                MissionManager.setVideoNumber(arr[Protocol.INDEX_PLAY_NUM]);
                 fileUri = getVideoPATH(arr[Protocol.INDEX_PLAY_NUM]);
                 backgroundVideoLoaderTask = new VideoLoaderTask();
                 backgroundVideoLoaderTask.execute(Pair.create(fileUri, videoOptions));
@@ -324,7 +326,7 @@ public class VrVideoActivity extends Activity {
                             //5. 비디오 포즈
                             //6. 게임 종료 팝업 & 다시할지 여부 체크
                             //score 계산을 위해서 arr. 던져주고 감점되는 값을 받아옴
-                            int penalty = TaskValidator.validate(arr, mVrVideoView.getCurrentPosition());
+                            int penalty = MissionManager.validate(arr, mVrVideoView.getCurrentPosition());
                             if(penalty != 0) {
                                 setScore(penalty);
                                 if (getScore() < GAMEOVER_SCORE) {
@@ -343,7 +345,7 @@ public class VrVideoActivity extends Activity {
                                     } else {
                                         videoTime = 0;
                                     }
-                                    TaskValidator.reInit();
+                                    MissionManager.reInit();
                                     mVrVideoView.seekTo(videoTime);
                                     currTime = videoTime;
                                     pauseVideo();
@@ -494,7 +496,7 @@ public class VrVideoActivity extends Activity {
         isGameOver = false;
         resetVideo();
         resetScore();
-        TaskValidator.reInit();
+        MissionManager.reInit();
     }
 
     /**

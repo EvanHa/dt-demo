@@ -1,17 +1,6 @@
 package app.park.com.control;
 
-import java.math.BigDecimal;
-import java.util.Timer;
-import java.util.TimerTask;
-
-import app.park.com.MainActivity;
-import app.park.com.R;
-import app.park.com.bluetooth.BluetoothHandler;
-import app.park.com.bluetooth.BluetoothService;
-import app.park.com.bluetooth.Constants;
-
 import android.app.Activity;
-import android.content.Intent;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
@@ -31,6 +20,15 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.PopupWindow;
 import android.widget.Toast;
+
+import java.math.BigDecimal;
+import java.util.Timer;
+import java.util.TimerTask;
+
+import app.park.com.R;
+import app.park.com.bluetooth.BluetoothHandler;
+import app.park.com.bluetooth.BluetoothService;
+import app.park.com.bluetooth.Constants;
 
 import static app.park.com.R.layout.popup;
 
@@ -157,8 +155,7 @@ public class ControlActivity extends Activity implements SensorEventListener,
 					case Constants.MESSAGE_READ: // 블루투스 메시지 수신
 						// vr쪽 나갔으면 여기도 메인으로 나감
 						if(msg.equals("stop")) {
-							Intent intent = new Intent(getApplicationContext(), MainActivity.class);
-							startActivity(intent);
+							finish();
 						}
 
 						// 메시지가 미션페일이면 속도 0으로 하고 toast
@@ -619,9 +616,7 @@ public class ControlActivity extends Activity implements SensorEventListener,
 			public void onClick(View view) {
 				// 정지 메시지 보냄
 				mBluetoothService.sendMessage("stop////1");
-
-				Intent intent = new Intent(getApplicationContext(), MainActivity.class);
-				startActivity(intent);
+				finish();
 			}
 		});
 
