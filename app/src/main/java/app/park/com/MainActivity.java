@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.support.v4.app.FragmentTransaction;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.WindowManager;
 import android.widget.RadioGroup;
 import app.park.com.bluetooth.BluetoothFragment;
 import app.park.com.bluetooth.Constants;
@@ -52,6 +53,7 @@ public class MainActivity extends ActivityBase implements RadioGroup.OnCheckedCh
     @Override
     protected void onResume() {
         super.onResume();
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         if (mBluetoothFragment.isBluetoothConnected()) {
             updateUi(Constants.MESSAGE_BT_CONNECTED);
         } else {

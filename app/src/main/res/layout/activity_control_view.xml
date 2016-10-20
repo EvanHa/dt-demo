@@ -7,7 +7,7 @@
     android:orientation="horizontal"
     android:padding="4dip"
     android:src="@color/white"
-    android:background="@drawable/tile">
+    android:background="@drawable/controller_bg">
 
     <LinearLayout
         android:id="@+id/layoutLeft"
