@@ -100,7 +100,7 @@ public class VrVideoActivity extends Activity {
 
     //time
     public static final int TIME_THRESHOLD_SECOND = 1000;
-    public static final long REVERSE_TIME = 5000; // 5 seconds
+    public static final long REVERSE_TIME = 15000; // 15 seconds
     public static final int TIME_GAP = 14;
 
     //game score
