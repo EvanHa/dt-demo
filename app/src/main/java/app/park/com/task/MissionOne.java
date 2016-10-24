@@ -6,12 +6,12 @@ public class MissionOne extends Mission {
     public static final String TAG = MissionOne.class.getSimpleName();
 
     public boolean task1 = false; // 1:30 ~ 1:40 우측 차선 변경
-    public boolean task2 = false; // 2:15 ~ 2:20 감속 및 정지
+    public boolean task2 = false; // 2:15 ~ 2:25 감속 및 정지
     public boolean task3 = false; // 2:46 ~ 2:56 재 출발 및 유턴
-    public boolean task4 = false; // 3:30 ~ 3:35 좌측 차선 변경
+    public boolean task4 = false; // 3:25 ~ 3:35 좌측 차선 변경
     public boolean task5 = false; // 4:30 ~ 4:35 감속
-    public boolean task6 = false; // 4:55 ~ 5:00 좌측 차선 변경
-    public boolean task7 = false; // 5:25 ~ 5:30 감속 및 정지
+    public boolean task6 = false; // 4:55 ~ 5:05 좌측 차선 변경
+    public boolean task7 = false; // 5:25 ~ 5:35 감속 및 정지
     public boolean task8 = false; // 5:45 ~ 5:55 재출발 및 유턴
 
     @Override
@@ -57,18 +57,23 @@ public class MissionOne extends Mission {
                     returnPenalty = MISSION_FAIL_TURN;
                 }
                 break;
-            case 135: // 2:15 ~ 2:20 감속 및 정지(task2)
+            case 135: // 2:15 ~ 2:25 감속 및 정지(task2)
             case 136:
             case 137:
             case 138:
             case 139:
             case 140:
+            case 141:
+            case 142:
+            case 143:
+            case 144:
+            case 145:
                 if (checkStop(arr)) {
                     task2 = true;
                     returnPenalty = MISSION_CLEAR;
                 }
                 break;
-            case 141: // task2 fail
+            case 146: // task2 fail
                 if (task2 == false) {
                     returnPenalty = MISSION_FAIL_STOP;
                 }
@@ -93,7 +98,12 @@ public class MissionOne extends Mission {
                     returnPenalty = MISSION_FAIL_START;
                 }
                 break;
-            case 210: // 3:30 ~ 3:35 좌측 차선 변경(task4)
+            case 205: // 3:25 ~ 3:35 좌측 차선 변경(task4)
+            case 206:
+            case 207:
+            case 208:
+            case 209:
+            case 210:
             case 211:
             case 212:
             case 213:
@@ -125,34 +135,44 @@ public class MissionOne extends Mission {
                     returnPenalty = MISSION_FAIL_STOP;
                 }
                 break;
-            case 295: // 4:55 ~ 5:00 좌측 차선 변경(task6)
+            case 295: // 4:55 ~ 5:05 좌측 차선 변경(task6)
             case 296:
             case 297:
             case 298:
             case 299:
             case 300:
+            case 301:
+            case 302:
+            case 303:
+            case 304:
+            case 305:
                 if (checkTurnLeft(arr)) {
                     task6 = true;
                     returnPenalty = MISSION_CLEAR;
                 }
                 break;
-            case 301: // task6 fail
+            case 306: // task6 fail
                 if (task6 == false) {
                     returnPenalty = MISSION_FAIL_START;
                 }
                 break;
-            case 325: // 5:25 ~ 5:30 감속 및 정지(task7)
+            case 325: // 5:25 ~ 5:35 감속 및 정지(task7)
             case 326:
             case 327:
             case 328:
             case 329:
             case 330:
+            case 331:
+            case 332:
+            case 333:
+            case 334:
+            case 335:
                 if (checkStop(arr)) {
                     task7 = true;
                     returnPenalty = MISSION_CLEAR;
                 }
                 break;
-            case 331: // task7 fail
+            case 336: // task7 fail
                 if (task7 == false) {
                     returnPenalty = MISSION_FAIL_TURN;
                 }
