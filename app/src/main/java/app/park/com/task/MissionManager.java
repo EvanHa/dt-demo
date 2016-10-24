@@ -5,7 +5,8 @@ public class MissionManager {
 
     public static String currentVideo;
     public static MissionOne mOne = new MissionOne();
-    public static MissionTwo mTwo = new MissionTwo();
+    //public static MissionTwo mTwo = new MissionTwo();
+    public static MissionTwoTest mTwo = new MissionTwoTest();
     public static MissionThree mThree = new MissionThree();
 
     public static void setVideoNumber(String number) {
