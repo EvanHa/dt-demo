@@ -83,6 +83,7 @@ public class MissionThree extends Mission {
                     task3 = true;
                     returnPenalty = MISSION_CLEAR;
                 }
+                break;
             case 161: // task3 fail
                 if (task3 == false) {
                     returnPenalty = MISSION_FAIL_START;
